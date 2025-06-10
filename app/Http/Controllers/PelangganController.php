@@ -1,79 +1,76 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Pelanggan;
-use App\Models\pesanan;
+use App\Models\Pesanan;
 use Illuminate\Http\Request;
 
 class PelangganController extends Controller
 {
-public function index()
-{
-    $pelanggans = Pelanggan::all();
-    return view('pelanggan.dashboard_pelanggan', compact('pelanggans'));
-}
+    public function index()
+    {
+        $pelanggan = Pelanggan::all();
+        return view('pelanggan.dashboard_pelanggan', ['KurirData' => $pelanggan]);
+    }
 
-public function pesan()
-{
-    $DataPesan = Pesanan::with('pelanggan')->get(); // Memuat relasi pelanggan
-    return view('pelanggan.pelanggan_pesan', compact('DataPesan'));
-}
+    public function pesan()
+    {
+        $pesanans = Pesanan::with('pelanggan')->get();
+        return view('pelanggan.pelanggan_pesan', ['pesanans' => $pesanans]);
+    }
 
-public function store(Request $request)
-{
-    $validatedData = $request->validate([
-        'nama' => 'required|string|max:100',
-        'email' => 'nullable|email|max:255',
-        'no_hp' => 'nullable|string|max:20',
-        'alamat' => 'nullable|string',
-    ]);
+    public function create()
+    {
+        return view('pelanggan.form_tambah_pelanggan');
+    }
 
-    // Tambahkan data pelanggan ke database
-    $pelanggan = Pelanggan::create($validatedData);
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email|unique:pelanggans,email',
+            'no_hp' => 'required|string|max:15',
+            'alamat' => 'required|string|max:255',
+        ]);
 
-    // Redirect ke form tambah pesanan dengan id_pelanggan
-    return redirect()->route('pesanan.create', $pelanggan->id_pelanggan)->with('success', 'Pelanggan berhasil ditambahkan. Silakan isi pesanan.');
-}
-public function create()
-{
-    return view('pelanggan.form_tambah_pelanggan');
-}
-public function riwayat($id)
-{
-    // Ambil data pelanggan beserta riwayat pesanannya
-    $pelanggan = Pelanggan::with('pesanans.detailPesanan.produk')->findOrFail($id);
+        Pelanggan::create($validatedData);
 
-    // Tampilkan view riwayat_pembelian.blade.php dengan data pelanggan
-    return view('pelanggan.riwayat_pembelian', compact('pelanggan'));
-}
-public function edit($id)
-{
-    $pelanggan = Pelanggan::findOrFail($id); // Ambil data pelanggan berdasarkan ID
-    return view('pelanggan.edit_pelanggan', compact('pelanggan'));
-}
-public function update(Request $request, $id)
-{
-    $validatedData = $request->validate([
-        'nama' => 'required|string|max:255',
-        'email' => 'nullable|email|max:255',
-        'no_hp' => 'nullable|string|max:15',
-        'alamat' => 'nullable|string|max:500',
-    ]);
+        return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil ditambahkan.');
+    }
 
-    $pelanggan = Pelanggan::findOrFail($id); // Cari pelanggan berdasarkan ID
-    $pelanggan->update($validatedData); // Update data pelanggan
+    public function riwayat($id_pelanggan)
+    {
+        $pelanggan = Pelanggan::with(['pesanans.detailPesanan.produk'])->findOrFail($id_pelanggan);
+        return view('pelanggan.riwayat_pembelian', compact('pelanggan'));
+    }
 
-    return redirect()->route('pelanggan.index')->with('success', 'Data pelanggan berhasil diperbarui.');
-}
-public function destroy($id)
-{
-    // Cari pelanggan berdasarkan ID
-    $pelanggan = Pelanggan::findOrFail($id);
+    public function edit($id_pelanggan)
+    {
+        $pelanggan = Pelanggan::findOrFail($id_pelanggan);
+        return view('pelanggan.edit_pelanggan', compact('pelanggan'));
+    }
 
-    // Hapus pelanggan
-    $pelanggan->delete();
+    public function update(Request $request, $id_pelanggan)
+    {
+        $validatedData = $request->validate([
+            'nama' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'no_hp' => 'nullable|string|max:15',
+            'alamat' => 'nullable|string|max:500',
+        ]);
 
-    // Redirect ke halaman dashboard pelanggan dengan pesan sukses
-    return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil dihapus.');
-}
+        $pelanggan = Pelanggan::findOrFail($id_pelanggan);
+        $pelanggan->update($validatedData);
+
+        return redirect()->route('pelanggan.index')->with('success', 'Data pelanggan berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        $pelanggan = Pelanggan::findOrFail($id);
+        $pelanggan->delete();
+
+        return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil dihapus.');
+    }
 }

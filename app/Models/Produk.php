@@ -9,10 +9,20 @@ class Produk extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama_produk', 'harga_satuan', 'stok_tersedia'];
+    protected $table = 'produks'; // Nama tabel di database
 
-    public function produk()
+    protected $primaryKey = 'id_produk'; // Primary key
+
+    protected $fillable = [
+        'nama_produk',
+        'gambar_produk',
+        'harga_satuan',
+        'stok_tersedia',
+        'deskripsi_produk', // Tambahkan kolom ini
+    ];
+
+    public function detailPesanan()
     {
-        return $this->belongsTo(Produk::class, 'id_produk');
+        return $this->hasMany(DetailPesanan::class, 'id_produk', 'id_produk');
     }
 }

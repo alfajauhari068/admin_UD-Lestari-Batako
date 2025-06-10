@@ -1,8 +1,12 @@
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet"> <!-- Jika ada file CSS kustom -->
+</head>
 @extends('layouts.navbar')
 
 @section('content')
-<div class="container py-4">
-    <h2 class="mb-4 fw-bold text-primary">Riwayat Pembelian - {{ $pelanggan->nama }}</h2>
+<div class="container py-4 p-5 mt-5">
+    <h2 class="mb-4 mt-5 fw-bold text-primary">Riwayat Pembelian - {{ $pelanggan->nama }}</h2>
 
     {{-- Informasi Pelanggan --}}
     <div class="card mb-4">
@@ -26,7 +30,7 @@
                         <th>Tanggal Pesanan</th>
                         <th>Status</th>
                         <th>Total Bayar</th>
-                        <th>Detail Produk</th>
+                        <th>Catatan</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,8 +42,11 @@
                         <td>Rp{{ number_format($pesanan->total_bayar, 0, ',', '.') }}</td>
                         <td>
                             <ul>
-                                @foreach ($pesanan->detailPesanan as $detail)
-                                <li>{{ $detail->produk->nama_produk }} - {{ $detail->jumlah }} pcs</li>
+                                @foreach ($pesanan->detailPesanan as $catatan)
+                                    <li>{{ $catatan->produk->nama_produk ?? 'Tidak Diketahui' }} - {{ $catatan->jumlah }} pcs</li>
+                                    @if(!empty($catatan->catatan))
+                                        <small class="text-muted">Catatan: {{ $catatan->catatan }}</small>
+                                    @endif
                                 @endforeach
                             </ul>
                         </td>

@@ -3,33 +3,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relation\HasMany;
 
 class Pesanan extends Model
 {
     use HasFactory;
 
+    protected $table = 'pesanans';
     protected $primaryKey = 'id_pesanan';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
-    protected $fillable = ['id_pelanggan', 'id_pesanan', 'id', 'jumlah', 'total_bayar', 'catatan', 'status'];
+    protected $fillable = [
+        'id_pelanggan',
+        'catatan',
+        'status',
+        'total_bayar',
+    ];
 
     public function pelanggan()
     {
-        return $this->belongsTo(Pelanggan::class, 'id_pelanggan');
+        return $this->belongsTo(Pelanggan::class, 'id_pelanggan', 'id_pelanggan');
     }
 
-    public function produk()
-    {
-        return $this->belongsTo(Produk::class, 'id_produk');
-    }
-
-    public function pesanan()
-    {
-        return $this->belongsTo(Pesanan::class, 'id_pesanan');
-    }
-    
     public function detailPesanan()
     {
-        return $this->hasMany(DetailPesanan::class, 'id_pesanan');
+        return $this->hasMany(DetailPesanan::class, 'id_pesanan', 'id_pesanan');
     }
 }

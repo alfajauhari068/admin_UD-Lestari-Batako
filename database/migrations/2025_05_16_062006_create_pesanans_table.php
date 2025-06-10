@@ -6,26 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Schema::create('pesanans', function (Blueprint $table) {
             $table->id('id_pesanan'); // Primary key dan auto-increment
-            $table->unsignedBigInteger('id_pelanggan');
+            $table->unsignedBigInteger('id_pelanggan'); // Foreign key ke tabel pelanggan
             $table->text('catatan')->nullable();
-            $table->enum('status', ['Diproses', 'Dikirim', 'Selesai'])->default('Diproses');
-            $table->decimal('total_bayar', 10, 2)->default(0);
             $table->timestamps();
 
+            
             $table->foreign('id_pelanggan')->references('id_pelanggan')->on('pelanggans')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    
     public function down(): void
     {
         Schema::dropIfExists('pesanans');

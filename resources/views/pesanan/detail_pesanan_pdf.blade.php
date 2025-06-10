@@ -6,10 +6,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Pesanan</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        table, th, td { border: 1px solid black; }
-        th, td { padding: 8px; text-align: left; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        h2, h3 {
+            color: #007bff;
+        }
+        p {
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        th {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        td {
+            padding: 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
     </style>
 </head>
 <body>

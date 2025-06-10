@@ -1,9 +1,13 @@
-{{-- filepath: d:\KULIAH\Semester4\Interaksi Manusia dan Komputer\tugas-3\ud_lestari-batako\resources\views\pesanan\edit_pesanan.blade.php --}}
+{{-- filepath: d:\KULIAH\Semester4\Pemrograman FrameWork\ud_lestari-batako\resources\views\pesanan\edit_pesanan.blade.php --}}
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet"> <!-- Jika ada file CSS kustom -->
+</head>
 @extends('layouts.navbar')
 
 @section('content')
-<div class="container py-4">
-    <h2 class="mb-4 fw-bold text-primary">Edit Pesanan</h2>
+<div class="container py-4 pt-5 p-5" style="padding-top: 80px;"> <!-- Tambahkan padding-top untuk menghindari tumpang tindih dengan navbar -->
+    <h2 class="mb-4 pt-5 fw-bold text-primary">Edit Pesanan</h2>
 
     <div class="card shadow-sm border-0">
         <div class="card-body">
@@ -14,7 +18,7 @@
                 {{-- Informasi Pelanggan --}}
                 <div class="mb-3">
                     <label for="nama_pelanggan" class="form-label">Nama Pelanggan</label>
-                    <input type="text" class="form-control" id="nama_pelanggan" name="nama_pelanggan" value="{{ old('nama_pelanggan', $pesanan->pelanggan->nama) }}" required>
+                    <input type="text" class="form-control" id="nama_pelanggan" name="nama_pelanggan" value="{{ old('nama_pelanggan', $pesanan->pelanggan->nama) }}" readonly>
                 </div>
 
                 <div class="mb-3">
@@ -29,7 +33,7 @@
                     <div class="row mb-3 produk-row">
                         <div class="col-md-4">
                             <label for="produk_{{ $index }}" class="form-label">Produk</label>
-                            <select class="form-select" id="produk_{{ $index }}" name="id[]" required>
+                            <select class="form-select produk-select" id="produk_{{ $index }}" name="id[]" required>
                                 <option value="" disabled>Pilih Produk</option>
                                 @foreach ($produks as $produk)
                                 <option value="{{ $produk->id }}" data-harga="{{ $produk->harga_satuan }}" {{ $produk->id == $detail->id_produk ? 'selected' : '' }}>
@@ -40,11 +44,11 @@
                         </div>
                         <div class="col-md-3">
                             <label for="jumlah_{{ $index }}" class="form-label">Jumlah</label>
-                            <input type="number" class="form-control" id="jumlah_{{ $index }}" name="jumlah[]" value="{{ $detail->jumlah }}" min="1" required>
+                            <input type="number" class="form-control jumlah-input" id="jumlah_{{ $index }}" name="jumlah[]" value="{{ $detail->jumlah }}" min="1" required>
                         </div>
                         <div class="col-md-3">
                             <label for="total_harga_{{ $index }}" class="form-label">Total Harga</label>
-                            <input type="text" class="form-control" id="total_harga_{{ $index }}" value="Rp{{ number_format($detail->total_bayar, 0, ',', '.') }}" readonly>
+                            <input type="text" class="form-control total-harga" id="total_harga_{{ $index }}" value="Rp{{ number_format($detail->total_bayar, 0, ',', '.') }}" readonly>
                         </div>
                     </div>
                     @endforeach
@@ -56,20 +60,21 @@
         </div>
     </div>
 </div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const produkRows = document.querySelectorAll('.produk-row');
 
         produkRows.forEach(row => {
-            const jumlahInput = row.querySelector('input[name="jumlah[]"]');
-            const produkSelect = row.querySelector('select[name="id[]"]');
-            const totalHargaInput = row.querySelector('input[id^="total_harga_"]');
+            const jumlahInput = row.querySelector('.jumlah-input');
+            const produkSelect = row.querySelector('.produk-select');
+            const totalHargaInput = row.querySelector('.total-harga');
 
             // Fungsi untuk menghitung total harga
             const calculateTotalHarga = () => {
                 const selectedOption = produkSelect.options[produkSelect.selectedIndex];
-                const hargaSatuan = selectedOption.dataset.harga || 0;
-                const jumlah = jumlahInput.value || 0;
+                const hargaSatuan = parseInt(selectedOption.dataset.harga || 0);
+                const jumlah = parseInt(jumlahInput.value || 0);
                 const totalHarga = hargaSatuan * jumlah;
 
                 totalHargaInput.value = `Rp${totalHarga.toLocaleString('id-ID')}`;
