@@ -1,0 +1,603 @@
+:root {
+    --primary: #0ea5e9;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #1e293b;
+    --muted: #64748b;
+    --bg-main: #f4f6f8;
+    --bg-card: #ffffff;
+    --radius: 10px;
+    --shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    --font-base: 13.5px;
+    --sidebar-width: 250px;
+}
+
+* {
+    box-sizing: border-box;
+}
+html,
+body {
+    height: 100%;
+}
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+        Arial;
+    font-size: var(--font-base);
+    background: var(--bg-main);
+    color: var(--dark);
+}
+
+.layout-wrapper {
+    display: flex;
+    min-height: 100vh;
+    align-items: flex-start;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    background: var(--dark);
+    color: #fff;
+    padding: 20px 16px;
+}
+
+.sidebar h5 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+}
+.sidebar .nav {
+    padding-left: 0;
+    margin: 0;
+    list-style: none;
+}
+.sidebar .nav a {
+    display: block;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 8px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+}
+.sidebar .nav a:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: #fff;
+}
+.sidebar .nav .active {
+    background: var(--warning);
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.layout-content {
+    flex: 1 1 auto;
+    padding: 20px;
+    min-width: 0; /* prevent overflow */
+}
+
+.dashboard-header {
+    background: var(--bg-card);
+    padding: 14px;
+    border-left: 4px solid var(--warning);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+}
+.dashboard-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+.dashboard-header small {
+    color: var(--muted);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.stat-card i {
+    font-size: 20px;
+    color: var(--primary);
+}
+.stat-card h6 {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+}
+.stat-card .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+.card .card-body {
+    padding: 12px;
+}
+.card h4 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.table th,
+.table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #eef2f6;
+}
+.table thead th {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+}
+.table-sm td,
+.table-sm th {
+    padding: 6px 8px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.list-group-flush .list-group-item {
+    padding: 8px 12px;
+    border: none;
+}
+.badge-primary {
+    background: var(--primary);
+    color: #fff;
+}
+
+.layout-footer {
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* Utilities */
+.text-primary {
+    color: var(--primary) !important;
+}
+.text-muted {
+    color: var(--muted) !important;
+}
+.fw-semibold {
+    font-weight: 600;
+}
+.small {
+    font-size: 12px;
+}
+
+/* ===================================================
+   ROOT VARIABLES (INDUSTRIAL INTERACTIVE SYSTEM)
+=================================================== */
+:root {
+    --primary: #0f172a;
+    --accent: #fbbf24;
+    --info: #38bdf8;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+
+    --bg-main: #eef2f7;
+    --bg-card: #ffffff;
+    --bg-sidebar: #020617;
+
+    --text-main: #0f172a;
+    --text-muted: #6b7280;
+
+    --radius: 10px;
+    --shadow: 0 6px 16px rgba(2, 6, 23, 0.08);
+    --shadow-hover: 0 12px 28px rgba(2, 6, 23, 0.15);
+
+    --transition: 0.25s ease;
+}
+
+/* ===================================================
+   ROOT VARIABLES (INTERACTIVE INDUSTRIAL)
+=================================================== */
+:root {
+    --primary: #0f172a;
+    --primary-soft: #1e293b;
+
+    --accent: #f59e0b;
+    --accent-soft: rgba(245, 158, 11, 0.15);
+
+    --info: #0ea5e9;
+    --info-soft: rgba(14, 165, 233, 0.15);
+
+    --success: #16a34a;
+    --success-soft: rgba(22, 163, 74, 0.15);
+
+    --warning: #f59e0b;
+    --danger: #dc2626;
+
+    --bg-main: #f1f5f9;
+    --bg-card: #ffffff;
+    --bg-sidebar: #020617;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+
+    --radius: 10px;
+    --shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    --shadow-hover: 0 12px 28px rgba(15, 23, 42, 0.18);
+
+    --transition: 0.25s ease;
+}
+
+/* ===================================================
+   RESET & BASE
+=================================================== */
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    color: var(--text-main);
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* ===================================================
+   APP SHELL
+=================================================== */
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ===================================================
+   MAIN CONTENT
+=================================================== */
+.app-main {
+    flex: 1;
+    padding: 15px;
+    padding-left: 270px;
+    overflow-x: hidden;
+}
+
+/* ===================================================
+   DASHBOARD HEADER
+=================================================== */
+.dashboard-header {
+    margin-bottom: 24px;
+    padding: 16px 18px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--primary), var(--primary-soft));
+    color: #fff;
+    box-shadow: var(--shadow);
+}
+
+.dashboard-header h1 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.dashboard-header p {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #cbd5f5;
+}
+
+/* ===================================================
+   GRID LAYOUT
+=================================================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+/* ===================================================
+   PANEL / CARD
+=================================================== */
+.panel {
+    background: linear-gradient(180deg, #ffffff, #f8fafc);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: transform var(--transition), box-shadow var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        var(--accent-soft),
+        transparent
+    );
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.panel:hover::before {
+    opacity: 1;
+}
+
+.panel:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+}
+
+.panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, rgba(15, 23, 42, 0.03), transparent);
+}
+
+.panel-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--primary);
+}
+
+.panel-body {
+    padding: 16px;
+}
+
+.panel-body--scroll {
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+/* ===================================================
+   TABLE INDUSTRIAL INTERACTIVE
+=================================================== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+tbody td {
+    padding: 8px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background var(--transition), color var(--transition);
+}
+
+tbody tr:hover {
+    background: linear-gradient(90deg, var(--info-soft), transparent);
+}
+
+/* ===================================================
+   BADGE (COLORFUL BUT CONTROLLED)
+=================================================== */
+.badge {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 11px;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.badge-info {
+    background: var(--info-soft);
+    color: var(--info);
+}
+
+.badge-success {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.badge-warning {
+    background: rgba(245, 158, 11, 0.18);
+    color: var(--warning);
+}
+
+.badge-danger {
+    background: rgba(220, 38, 38, 0.18);
+    color: var(--danger);
+}
+
+/* ===================================================
+   FOOTER
+=================================================== */
+.app-footer {
+    margin-top: 36px;
+    padding-top: 14px;
+    font-size: 11px;
+    color: var(--text-muted);
+    border-top: 1px dashed #e5e7eb;
+    text-align: center;
+}
+/* Buttons (compact admin) */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+}
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+.btn-outline {
+    background: transparent;
+    border: 1px solid #e6edf2;
+}
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+}
+.btn-warning {
+    background: var(--warning);
+    color: var(--dark);
+}
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+}
+
+/* Dashboard table */
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.dashboard-table th,
+.dashboard-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eef2f6;
+}
+.dashboard-table thead th {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+}
+.dashboard-table .text-center {
+    text-align: center;
+}
+
+/* Small utilities */
+.text-center {
+    text-align: center;
+}
+.text-muted {
+    color: var(--muted);
+}
+.text-danger {
+    color: var(--danger);
+}
+
+/* Small layout utilities to avoid inline styles */
+.avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 9999px;
+    object-fit: cover;
+    display: block;
+}
+.hr-rule {
+    margin: 16px 0;
+    border: none;
+    border-top: 1px solid #eef2f6;
+}
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.flex-row {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+.flex-inline {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+}
+.form-inline {
+    display: inline-block;
+}
+
+/* Form industrial styles */
+.form-industrial .form-group {
+    margin-bottom: 16px;
+}
+.form-industrial label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 4px;
+    display: block;
+}
+.form-industrial .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+}
+.form-industrial .invalid-feedback {
+    color: var(--danger);
+    margin-top: 6px;
+    font-size: 13px;
+}
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+/* ===================================================
+   RESPONSIVE
+=================================================== */
+@media (max-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .app-main {
+        padding: 16px;
+    }
+}
+
+/* Scoped safety overrides for dashboard table actions
+   - Targets only action container inside dashboard tables (buttons/links/forms)
+   - Ensures clicks reach the actionable elements and places them above low z-index overlays
+   - Minimal, safe values to avoid interfering with modals/tooltips
+*/
+.dashboard-table .d-inline-flex.align-items-center,
+.dashboard-table .d-inline-flex.align-items-center a,
+.dashboard-table .d-inline-flex.align-items-center button,
+.dashboard-table .d-inline-flex.align-items-center .btn,
+.dashboard-table .d-inline-flex.align-items-center form {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 20 !important;
+}

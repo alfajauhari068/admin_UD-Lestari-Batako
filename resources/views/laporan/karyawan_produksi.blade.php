@@ -1,11 +1,11 @@
-@extends('layouts.navbar')
+@extends('layouts.app')
 
 @section('content')
 <div class="container p-5 mt-5">
     <h2 class="mb-4">Laporan Produksi Karyawan</h2>
 
     <!-- Filter -->
-    <form method="GET" action="{{ route('produksi_karyawan.index') }}" class="mb-4">
+    <form method="GET" action="{{ route('tim_produksi.index') }}" class="mb-4">
         <div class="row">
             <div class="col-md-4">
                 <label for="tanggal" class="form-label">Tanggal Produksi</label>

@@ -1,18 +1,13 @@
-<!-- filepath: d:\KULIAH\Semester4\Interaksi Manusia dan Komputer\tugas-3\ud_lestari-batako\resources\views\pesanan\dashboard_pesanan.blade.php -->
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ asset('css/custom.css') }}" rel="stylesheet"> <!-- Jika ada file CSS kustom -->
-</head>
-@extends('layouts.navbar')
+@extends('layouts.app')
 
 @section('content')
-<div class="container py-4">
+<div class="page-container p-fluid">
     <h2 class="mb-4 fw-bold text-primary">Daftar Pelanggan yang Memesan</h2>
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
+    <div class="table-industrial-wrapper">
+        <div style="padding: 1.5rem;">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+                <table class="table table-industrial striped">
+                    <thead>
                         <tr>
                             <th>No</th>
                             <th>Nama Pelanggan</th>
@@ -34,7 +29,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">Belum ada pesanan.</td>
+                            <td colspan="6">Belum ada pesanan.</td>
                         </tr>
                         @endforelse
                     </tbody>

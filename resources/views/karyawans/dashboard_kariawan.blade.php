@@ -1,41 +1,48 @@
-@extends('layouts.navbar')
-@extends('layouts.sidebar')
+@extends('layouts.app')
 
 @section('content')
 <div class="d-flex">
-    <!-- Main Content -->
-    <div class="container-fluid py-5 p-5 mt-5" style="margin-left: 250px; padding-top: 80px; background:rgba(252, 252, 252, 0.61); min-height: 100vh;">
-    <div class="mt-4">
-        @component('components.breadcrumb')
-                @slot('breadcrumbs', [
-                    ['name' => 'Karyawan', 'url' => route('karyawans.index')]
-                ])
-            @endcomponent
-            </div>
+    <div class="container-fluid py-5 p-5" style="padding-top: 80px; background:rgba(252,252,252,0.61); min-height: 100vh;">
+        
+    {{-- Header --}}
+        <section class="dashboard-header">
+            <h1>Daftar Karyawan</h1>
+            <p>Manajemen karyawan UD. Lestari Batako</p>
+        </section>
 
+        {{-- Breadcrumb --}}
+        <div class="mt-1">
+            @component('components.breadcrumb')
+                @slot('breadcrumbs', [['name' => 'Karyawan', 'url' => route('karyawans.index')]])
+            @endcomponent
+        </div>
+
+        {{-- Header dan Tombol Tambah --}}
         <div class="row justify-content-between align-items-center mb-3">
             <div class="col-auto">
-                <h4 class="fw-bold text-primary">Daftar Karyawan</h4>
+                <h4 class="fw-bold text-primary"><i class="bi bi-people"></i>Daftar Karyawan</h4>
             </div>
             <div class="col-auto">
-                <a href="{{ route('karyawans.create_kariawan') }}" class="btn btn-primary rounded-circle mb-3" style="width: 40px; height: 40px; display: flex; justify-content: center; align-items: center;">
-                    <i class="bi bi-plus-circle fs-4"></i>
+                <a href="{{ route('karyawans.create_kariawan') }}" class="btn btn-primary rounded-circle" style="width: 40px; height: 40px;">
+                    <i class="bi bi-plus-circle fs-4 d-flex justify-content-center align-items-center"></i>
                 </a>
             </div>
         </div>
 
-
-        <div class="card shadow-sm border-0" style="border-radius: 12px;">
-            <div class="card-body">
+        {{-- Card dan Tabel --}}
+        <div class="table-industrial-wrapper">
+            <div style="padding: 1.5rem;">
+                
+                {{-- Alert --}}
                 @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show mt-3 shadow-sm" role="alert">
+                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                     <i class="bi bi-check-circle-fill text-success me-2"></i>{{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
                 @endif
 
                 @if($errors->any())
-                <div class="alert alert-danger mt-3 shadow-sm">
+                <div class="alert alert-danger shadow-sm">
                     <ul class="mb-0">
                         @foreach ($errors->all() as $error)
                             <li><i class="bi bi-exclamation-circle-fill text-danger me-2"></i>{{ $error }}</li>
@@ -44,66 +51,65 @@
                 </div>
                 @endif
 
+                {{-- Table --}}
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped align-middle">
-                        <thead class="table-primary">
+                    <table class="table table-industrial striped">
+                        <thead>
                             <tr>
-                                <th><center>No</center></th>
-                                <th><center>Nama</center></th>
-                                <th><center>Posisi</center></th>
-                                <th><center>No HP</center></th>
-                                <th><center>Alamat</center></th>
-                                <th><center>Aksi</center></th>
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>Posisi</th>
+                                <th>No HP</th>
+                                <th>Alamat</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($karyawans as $karyawan)
                             <tr>
-                                <td><center>{{ $loop->iteration }}</center></td>
-                                <td><center>{{ $karyawan->nama }}</center></td>
-                                <td><center>{{ $karyawan->jabatan }}</center></td>
-                                <td><center>{{ $karyawan->no_hp }}</center></td>
-                                <td><center>{{ $karyawan->alamat }}</center></td>
-                                <td><center>
-                                    <div class="d-flex gap-2 justify-content-center">
-                                        
-
-                                        <!-- Tombol Edit -->
-                                        <button class="btn btn-primary btn-sm d-flex align-items-center gap-1" 
-                                                data-mdb-ripple-init type="button" 
-                                                onclick="window.location.href='{{ route('karyawans.edit', $karyawan->id_karyawan) }}'" 
-                                                data-bs-toggle="tooltip" title="Edit Karyawan">
+                                <td style="text-align: center; width: 60px;">{{ $loop->iteration }}</td>
+                                <td>{{ $karyawan->nama }}</td>
+                                <td>{{ $karyawan->jabatan }}</td>
+                                <td>{{ $karyawan->no_hp }}</td>
+                                <td>{{ $karyawan->alamat }}</td>
+                                <td style="text-align: center;">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        {{-- Edit --}}
+                                        <a href="{{ route('karyawans.edit', $karyawan->id_karyawan) }}"
+                                           class="btn btn-sm btn-info btn-icon" data-bs-toggle="tooltip" title="Edit Karyawan">
                                             <i class="bi bi-pencil-square"></i>
-                                        </button>
+                                        </a>
 
-                                        <!-- Tombol Hapus -->
-                                        <button class="btn btn-danger btn-sm d-flex align-items-center gap-1 rounded-circle" 
-                                                    data-mdb-ripple-init type="submit" 
-                                                    onclick="return confirm('Yakin ingin menghapus karyawan ini?')" 
-                                                    data-bs-toggle="tooltip" title="Hapus Karyawan" style="width: 30px; height: 30px; display: flex; justify-content: center; align-items: center;">
-                                                <i class="bi bi-trash"></i>
-                                        <form action="{{ route('karyawans.destroy', $karyawan->id_karyawan) }}" method="POST" style="display:inline;">
+                                        {{-- Hapus --}}
+                                        <form action="{{ route('karyawans.destroy', $karyawan->id_karyawan) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus karyawan ini?')" style="margin: 0;">
                                             @csrf
                                             @method('DELETE')
-                                            
+                                            <button type="submit" class="btn btn-sm btn-danger btn-icon" data-bs-toggle="tooltip" title="Hapus Karyawan">
+                                                <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
                                     </div>
-                                </center></td>
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted">Belum ada data karyawan.</td>
+                                <td colspan="6" style="text-align: center; color: #94A3B8; padding: 2rem;">Belum ada data karyawan.</td>
                             </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div class="card-footer text-end small text-muted">
-                UD Lestari Batako &copy; {{ date('Y') }}
-            </div>
         </div>
+
     </div>
 </div>
+
+{{-- Tooltip Init --}}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(el => new bootstrap.Tooltip(el));
+    });
+</script>
 @endsection

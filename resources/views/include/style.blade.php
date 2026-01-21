@@ -1,11 +1,26 @@
+<link rel="stylesheet" href="{{ asset('css/theme-industrial.css') }}">
+<link rel="stylesheet" href="{{ asset('css/industrial-components.css') }}">
+
 <style>
-/* General Styles */
+/* Legacy Auth Styles - To be refactored with theme */
 body {
     font-family: 'Arial', sans-serif;
     background-color: #f8f9fa;
     margin: 0;
     padding: 0;
 }
+
+.card-hover-blue {
+    background: linear-gradient(135deg, #1e88e5, #42a5f5, #bbdefb);
+    transition: transform 0.3s ease;
+    border-radius: 16px;
+}
+
+.card-hover-blue:hover {
+    transform: translateY(-5px) scale(1.02);
+}
+
+
 
 #auth {
     display: flex;
@@ -117,6 +132,18 @@ body {
     box-shadow: 0 4px 10px rgba(34, 74, 190, 0.3);
 }
 
+a.btn:hover {
+    
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(33, 150, 243, 0.4);
+    text-decoration: none;
+    
+}
+
+a {
+    
+}
+
 .btn-block {
     width: 100%;
 }
@@ -134,6 +161,9 @@ body {
     color: #224abe;
     margin-bottom: 8px;
 }
+
+
+
 
 /* Responsive Styles */
 @media (max-width: 768px) {
@@ -161,6 +191,13 @@ body {
     .btn-primary {
         font-size: 12px;
     }
+}
+
+@media (min-width: 768px) {
+  .dashboard-header:hover {
+    box-shadow: 0 12px 32px rgba(33, 150, 243, 0.15);
+    transform: translateY(-2px);
+  }
 }
 </style>
 

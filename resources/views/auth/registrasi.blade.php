@@ -1,16 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-    <link rel="stylesheet" href="{{ asset('template/assets/css/bootstrap.css') }}">
-    <link rel="stylesheet" href="{{ asset('template/assets/css/pages/auth.css') }}">
-    @include('include.style')
-</head>
-
-<body>
+@section('content')
     <div id="auth">
         <!-- Bagian Kiri (Form Register) -->
         <div id="auth-left">
@@ -20,7 +10,7 @@
             <h5 class="auth-title text-center title-small">Create an Account</h5>
             <p class="auth-subtitle text-center mb-4">Fill in the form below to create your account.</p>
 
-            <form action="{{ route('register.store') }}" method="POST">
+            <form action="" method="POST">
                 @csrf
                 <div class="form-group position-relative has-icon-left mb-3">
                     <input type="text" name="name" class="form-control form-control-sm @error('name') is-invalid @enderror" placeholder="Username" required>
@@ -58,7 +48,7 @@
                 <button type="submit" class="btn btn-primary btn-block btn-sm shadow-sm mt-3">Sign Up</button>
             </form>
             <div class="text-center mt-3">
-                <p class="text-gray-600">Already have an account? <a href="{{ route('login') }}" class="font-bold text-primary">Log in</a>.</p>
+                <p class="text-gray-600">Already have an account? <a href="" class="font-bold text-primary">Log in</a>.</p>
             </div>
         </div>
 
@@ -70,6 +60,5 @@
             </div>
         </div>
     </div>
-</body>
-
-</html>
+    </div>
+@endsection

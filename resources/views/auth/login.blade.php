@@ -1,17 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="{{("template\assets\css\pages\auth.css")}}">
-    <link rel="shortcut icon" href="assets/images/logo/favicon.svg" type="image/x-icon">
-    <link rel="shortcut icon" href="assets/images/logo/favicon.png" type="image/png">
-    @include('include.style')
-</head>
-
-<body>
+@section('content')
     <div id="auth">
         <!-- Bagian Kiri (Form Login) -->
         <div id="auth-left">
@@ -63,6 +52,5 @@
             </div>
         </div>
     </div>
-</body>
-
-</html>
+    </div>
+@endsection

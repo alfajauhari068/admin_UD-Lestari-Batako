@@ -1,0 +1,121 @@
+/* Layout System - Flex-based Dashboard Layout */
+
+/* Root layout wrapper - flex container */
+.layout-wrapper {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Sidebar positioning within flex layout */
+.layout-sidebar {
+    flex-shrink: 0; /* Prevents sidebar from shrinking */
+    width: 250px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+/* Main content area - takes remaining space */
+.layout-content {
+    flex: 1;
+    margin-left: 250px; /* Offset for fixed sidebar */
+    width: calc(100% - 250px);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Content inner container */
+.layout-content-inner {
+    flex: 1;
+    padding: 5rem 1.5rem 2rem 1.5rem;
+    background-color: #f8fafc;
+    overflow-y: auto;
+}
+
+/* Footer always at bottom */
+.layout-footer {
+    flex-shrink: 0;
+    margin-left: 250px; /* Align with content offset */
+    width: calc(100% - 250px);
+    background-color: #f8fafc;
+    color: #1e293b;
+    text-align: center;
+    padding: 2rem 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* Desktop layout - full flex structure */
+@media (min-width: 769px) {
+    .layout-wrapper {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .layout-sidebar {
+        position: fixed;
+        width: 250px;
+        height: 100vh;
+    }
+
+    .layout-content {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+    }
+
+    .layout-footer {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+    }
+}
+
+/* Mobile layout - collapse sidebar */
+@media (max-width: 768px) {
+    .layout-wrapper {
+        flex-direction: column;
+    }
+
+    .layout-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
+        width: 250px;
+        height: 100vh;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1001;
+    }
+
+    .layout-sidebar.show {
+        transform: translateX(0);
+    }
+
+    .layout-content {
+        margin-left: 0;
+        width: 100%;
+        padding-top: 0;
+    }
+
+    .layout-content-inner {
+        padding: 1rem;
+    }
+
+    .layout-footer {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+/* Prevent layout shift on scrollbar appearance */
+html {
+    overflow-y: scroll;
+}
+
+/* Ensure proper text rendering */
+body {
+    margin: 0;
+    padding: 0;
+}

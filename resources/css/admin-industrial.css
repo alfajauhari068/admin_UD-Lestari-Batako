@@ -1,0 +1,328 @@
+/* Admin industrial enterprise theme (global variables + components)
+   - Centralized color tokens and component styles
+   - Consistent cards, tables, buttons, forms, sidebar, header
+   - Keeps previous pointer-event safety rules scoped and intact
+*/
+
+:root {
+    --color-bg: #f8fafc; /* light neutral */
+    --color-surface: #ffffff; /* card/table backgrounds */
+    --color-text: #0f172a; /* dark navy / near-black */
+    --color-muted: #64748b; /* muted gray */
+    --color-primary: #0f172a; /* primary dark navy */
+    --color-accent: #f59e0b; /* muted amber/gold */
+    --color-danger: #dc2626; /* delete */
+    --sidebar-bg: #0b1220; /* slightly darker than primary */
+    --sidebar-text: #f1f5f9; /* muted white */
+    --card-radius: 12px;
+    --card-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    --soft-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    --muted-border: #e6eef6;
+    --input-height: 44px;
+}
+
+/* Base */
+html,
+body {
+    height: 100%;
+}
+body {
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        "Segoe UI",
+        Roboto,
+        "Helvetica Neue",
+        Arial;
+    background: var(--color-bg);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.45;
+}
+
+/* Header (page top inside main wrapper) */
+.page-header {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--muted-border);
+    box-shadow: 0 2px 8px rgba(2, 6, 23, 0.04);
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    gap: 1rem;
+}
+.page-header .brand {
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: 1rem;
+}
+.page-header .brand .accent {
+    color: var(--color-accent);
+    margin-left: 6px;
+}
+.page-header .user-menu {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.page-header--sticky {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    padding: 1rem 0.5rem;
+    overflow: auto;
+}
+.sidebar .nav-link {
+    color: var(--sidebar-text);
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+}
+.sidebar .nav-link:hover {
+    background: rgba(245, 158, 11, 0.06);
+    color: var(--color-surface);
+    text-decoration: none;
+}
+.sidebar .nav-link.active {
+    background: rgba(245, 158, 11, 0.08);
+    color: var(--color-accent);
+    font-weight: 600;
+}
+.sidebar .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+}
+.sidebar .logo img {
+    height: 44px;
+    width: auto;
+}
+
+/* Main wrapper offset for sidebar */
+.main-wrapper {
+    margin-left: 250px;
+    transition: margin-left 0.2s ease;
+}
+@media (max-width: 768px) {
+    .main-wrapper {
+        margin-left: 0;
+    }
+}
+
+/* Cards */
+.card.custom-card,
+.card.card--primary {
+    background: var(--color-surface);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    border: 0;
+}
+.card.custom-card .card-title {
+    font-weight: 600;
+    color: var(--color-text);
+}
+.card.custom-card .card-subtitle {
+    color: var(--color-muted);
+    font-size: 0.95rem;
+}
+
+/* Tables */
+.table.custom-table {
+    background: var(--color-surface);
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.table.custom-table thead th {
+    background: transparent;
+    color: var(--color-text);
+    font-weight: 600;
+    border-bottom: 1px solid var(--muted-border);
+}
+.table.custom-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+}
+.table.custom-table tbody tr:hover {
+    background: rgba(15, 23, 42, 0.02);
+}
+.table.custom-table td,
+.table.custom-table th {
+    vertical-align: middle;
+}
+
+/* Action buttons inside tables */
+.btn-icon {
+    background: transparent;
+    border: 0;
+    padding: 0.25rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-primary-custom {
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--color-primary);
+}
+.btn-secondary-custom {
+    background: transparent;
+    color: var(--color-muted);
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid transparent;
+}
+.btn-danger-custom {
+    background: transparent;
+    color: var(--color-danger);
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid rgba(220, 38, 38, 0.08);
+}
+.btn-icon .bi {
+    font-size: 1rem;
+}
+
+/* Forms */
+.form-control {
+    height: var(--input-height);
+    border-radius: 8px;
+    border: 1px solid var(--muted-border);
+    padding: 0.5rem 0.75rem;
+}
+.form-control:focus {
+    box-shadow: 0 0 0 0.12rem rgba(15, 23, 42, 0.06);
+    border-color: var(--muted-border);
+}
+.form-label {
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: 0.95rem;
+}
+.form-note {
+    color: var(--color-muted);
+    font-size: 0.92rem;
+}
+/* textareas that need larger height */
+.form-textarea {
+    min-height: 120px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+/* select / multiselect helpers */
+.form-multiselect {
+    min-height: 150px;
+    padding: 0.5rem;
+}
+
+/* Alerts (success / danger) - use Bootstrap classes but keep neutral colors */
+.alert-success {
+    background: #dcfce7;
+    color: #065f46;
+    border: 1px solid #86efac;
+}
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* Utility containers */
+.page-container {
+    padding: 2.5rem;
+}
+.page-container.p-fluid {
+    padding: 3rem;
+}
+
+/* layout helpers */
+.max-w-900 {
+    max-width: 900px;
+}
+.mx-left {
+    margin-left: 0;
+}
+
+/* Accessibility / pointer safety (preserve earlier fixes) */
+.app-main {
+    position: relative;
+    z-index: 1;
+}
+.panel::before,
+.panel::after,
+.app-main::before,
+.app-main::after {
+    pointer-events: none !important;
+}
+table,
+tbody,
+tr,
+td,
+.btn,
+.btn-icon,
+a,
+button {
+    pointer-events: auto !important;
+}
+.panel,
+.panel-body {
+    overflow: visible !important;
+}
+.dashboard-table a,
+.dashboard-table button {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 10 !important;
+}
+.table-responsive {
+    position: static !important;
+    overflow: auto !important;
+}
+.dashboard-table td {
+    position: relative;
+    z-index: 5;
+}
+.dashboard-table .d-inline-flex.align-items-center,
+.dashboard-table .d-inline-flex.align-items-center a,
+.dashboard-table .d-inline-flex.align-items-center button,
+.dashboard-table .d-inline-flex.align-items-center .btn,
+.dashboard-table .d-inline-flex.align-items-center form {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 20 !important;
+}
+.overlay {
+    z-index: 999 !important;
+}
+
+/* Small helpers */
+.text-muted {
+    color: var(--color-muted);
+}
+.muted {
+    color: var(--color-muted);
+}
+.rounded-lg {
+    border-radius: var(--card-radius);
+}

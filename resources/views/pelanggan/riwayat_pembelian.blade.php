@@ -1,8 +1,4 @@
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ asset('css/custom.css') }}" rel="stylesheet"> <!-- Jika ada file CSS kustom -->
-</head>
-@extends('layouts.navbar')
+@extends('layouts.app')
 
 @section('content')
 <div class="container py-4 p-5 mt-5">

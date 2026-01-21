@@ -32,6 +32,6 @@ class ProduksiKaryawan extends Model
     }
     public function tim()
     {
-        return $this->hasMany(produksi_karyawan_tim::class, 'id_produksi_karyawan');
+        return $this->hasMany(ProduksiKaryawanTim::class, 'id_produksi_karyawan');
     }
 }

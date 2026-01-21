@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\karyawan;
+use App\Models\Karyawan;
 use Illuminate\Http\Request;
 
 class KaryawanController extends Controller
@@ -26,7 +26,7 @@ class KaryawanController extends Controller
             'jabatan' => 'required|string|max:255',
             'no_hp' => 'required|string|max:15',
             'alamat' => 'required|string|max:500',
-            
+
         ]);
 
         Karyawan::create($validatedData);
