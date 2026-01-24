@@ -77,6 +77,17 @@ class ProduksiKaryawanController extends Controller
         return view('karyawan_produksi.dashboard_produksi_karyawan', compact('produksiKaryawans'));
     }
 
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index', 'create', 'detail']);
+
+        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
+            $this->middleware('permission:create produksi karyawan')->only(['create', 'store']);
+            $this->middleware('permission:edit produksi karyawan')->only(['edit', 'update']);
+            $this->middleware('permission:delete produksi karyawan')->only(['destroy']);
+        }
+    }
+
     public function create()
     {
         $karyawans = Karyawan::all();

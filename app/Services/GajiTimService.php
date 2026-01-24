@@ -33,12 +33,14 @@ class GajiTimService
    * ]
    * @throws Exception
    */
-  public function hitungGajiTim(int $id_produksi, ?string $tanggal_produksi = null): array
+  public function hitungGajiTim(int $id_produksi, ?string $tanggal_produksi = null, ?Produksi $produksi = null): array
   {
-    // Guard Clause: Cek validasi produksi
-    $produksi = Produksi::find($id_produksi);
+    // Guard Clause: Cek validasi produksi (reuse provided model if available)
     if (!$produksi) {
-      throw new Exception("Produksi dengan ID {$id_produksi} tidak ditemukan");
+      $produksi = Produksi::find($id_produksi);
+      if (!$produksi) {
+        throw new Exception("Produksi dengan ID {$id_produksi} tidak ditemukan");
+      }
     }
 
     // Guard Clause: Cek validasi kolom penting
@@ -119,8 +121,9 @@ class GajiTimService
     $id_produksi = $record->id_produksi;
     $tanggal = $record->tanggal_produksi?->format('Y-m-d');
 
-    $gajiData = $this->hitungGajiTim($id_produksi, $tanggal);
+    // Load produksi once and pass to hitungGajiTim to avoid duplicate lookups
     $produksi = Produksi::find($id_produksi);
+    $gajiData = $this->hitungGajiTim($id_produksi, $tanggal, $produksi);
 
     return array_merge($gajiData, [
       'produksi' => $produksi,

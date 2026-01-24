@@ -59,6 +59,10 @@ Route::get('/produk/{id_produk}', [ProdukController::class, 'show'])->name('prod
 Route::get('/produk/{id_produk}/edit', [ProdukController::class, 'edit'])->name('produk.edit');
 Route::put('/produk/{id_produk}', [ProdukController::class, 'update'])->name('produk.update');
 Route::delete('/produk/{id_produk}', [ProdukController::class, 'destroy'])->name('produk.delete');
+// Export routes (CSV / PDF) - permission guarded in controller
+Route::get('/produk/export/csv', [ProdukController::class, 'exportCsv'])->name('produk.export.csv');
+Route::get('/produk/export/pdf', [ProdukController::class, 'exportPdf'])->name('produk.export.pdf');
+Route::get('/produk/export/excel', [ProdukController::class, 'exportExcel'])->name('produk.export.excel');
 
 // Pelanggan Routes (RESTful)
 Route::get('/pelanggan', [PelangganController::class, 'index'])->name('pelanggan.index');
@@ -70,6 +74,9 @@ Route::put('/pelanggan/{id_pelanggan}', [PelangganController::class, 'update'])-
 Route::delete('/pelanggan/{id_pelanggan}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
 Route::get('/pelanggan/{id_pelanggan}/riwayat', [PelangganController::class, 'riwayat'])->name('pelanggan.riwayat');
 Route::get('/pelanggan-pesan', [PelangganController::class, 'pesan'])->name('pelanggan.pesan');
+Route::middleware(['auth'])->group(function () {
+    Route::post('/profile/toggle-dark-mode', [ProfileController::class, 'toggleDarkMode'])->name('profile.toggle-dark-mode');
+});
 
 // Pesanan Routes (RESTful)
 Route::get('/pesanan', [PesananController::class, 'index'])->name('pesanan.index');
@@ -77,6 +84,8 @@ Route::get('/pesanan/create', [PesananController::class, 'create'])->name('pesan
 Route::post('/pesanan', [PesananController::class, 'store'])->name('pesanan.store');
 Route::get('/pesanan/{id_pesanan}', [PesananController::class, 'show'])->name('pesanan.show');
 Route::get('/pesanan/{id_pesanan}/detail', [PesananController::class, 'detail'])->name('pesanan.detail');
+// Export
+Route::get('/pesanan/export/csv', [PesananController::class, 'exportCsv'])->name('pesanan.export.csv');
 Route::get('/pesanan/{id_pesanan}/edit', [PesananController::class, 'edit'])->name('pesanan.edit');
 Route::put('/pesanan/{id_pesanan}', [PesananController::class, 'update'])->name('pesanan.update');
 Route::delete('/pesanan/{id_pesanan}', [PesananController::class, 'destroy'])->name('pesanan.destroy');

@@ -41,7 +41,7 @@
         <label for="gambar_produk" class="form-label fw-semibold" style="color: #1E293B; font-size: 0.95rem;">Gambar Produk</label>
         @if($produk->gambar_produk)
             <div class="mb-3">
-                 <img src="{{ asset('..\storage\gambar_produk' . $produk->gambar_produk) }}" alt="Gambar Produk"
+                 <img src="{{ asset('storage/' . $produk->gambar_produk) }}" alt="Gambar Produk"
                      width="150" class="img-thumbnail shadow-sm rounded-lg">
             </div>
         @endif

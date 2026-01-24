@@ -19,9 +19,36 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('css/admin-industrial.css') }}">
+    <style>
+        :root{
+            --bg-color: #ffffff;
+            --text-color: #0f172a;
+            --card-bg: #ffffff;
+            --muted: #6b7280;
+            --primary: #0ea5a3;
+        }
+        [data-theme="dark"]{
+            --bg-color: #0b1220;
+            --text-color: #e6eef6;
+            --card-bg: #061021;
+            --muted: #9ca3af;
+            --primary: #06b6d4;
+        }
+        body{background-color:var(--bg-color); color:var(--text-color)}
+    </style>
+
 </head>
 
-<body>
+@php
+    $darkPref = false;
+    if(auth()->check()){
+        $darkPref = (bool) (auth()->user()->dark_mode ?? false);
+    } else {
+        $darkPref = session('dark_mode', false);
+    }
+@endphp
+
+<body data-theme="{{ $darkPref ? 'dark' : 'light' }}">
 
     {{-- Site chrome: sidebar (global) --}}
     @include('layouts.sidebar')
@@ -42,6 +69,24 @@
 
     {{-- Bootstrap JS centralized --}}
     <script src="{{ asset('assets/bootstrap-5.3.6-dist/js/bootstrap.bundle.min.js') }}"></script>
+
+    {{-- Non-Vite helper scripts (copied to public/js to avoid Vite manifest dependency) --}}
+    <script src="{{ asset('js/dark-mode.js') }}"></script>
+
+    {{-- Small global helpers: show/hide loading overlay if present --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Expose simple loading helpers for components
+            window.showTableLoading = function(id){
+                const el = document.getElementById(id);
+                if(el) el.classList.add('show-loading');
+            };
+            window.hideTableLoading = function(id){
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('show-loading');
+            };
+        });
+    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {

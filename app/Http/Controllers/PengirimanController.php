@@ -16,6 +16,17 @@ class PengirimanController extends Controller
         return view('pengiriman.dashboard_pengiriman', compact('pengirimans'));
     }
 
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index', 'show', 'create']);
+
+        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
+            $this->middleware('permission:create pengiriman')->only(['create', 'store']);
+            $this->middleware('permission:edit pengiriman')->only(['edit', 'update']);
+            $this->middleware('permission:delete pengiriman')->only(['destroy']);
+        }
+    }
+
     public function create($id_pesanan)
     {
         $pesanan = Pesanan::with('pelanggan')->findOrFail($id_pesanan);

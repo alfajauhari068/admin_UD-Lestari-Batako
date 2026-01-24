@@ -17,6 +17,17 @@ class ProduksiController extends Controller
         return view('produksi.dashboard_produksi', compact('produksis'));
     }
 
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index', 'show', 'detailByDate', 'create']);
+
+        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
+            $this->middleware('permission:create produksi')->only(['create', 'store']);
+            $this->middleware('permission:edit produksi')->only(['edit', 'update']);
+            $this->middleware('permission:delete produksi')->only(['destroy']);
+        }
+    }
+
     public function create()
     {
         // Ambil master produk untuk dropdown

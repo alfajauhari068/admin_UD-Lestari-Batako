@@ -28,11 +28,18 @@
         {{-- Header panel --}}
         <div class=" d-flex justify-content-between align-items-center mb-3">
             <h3 class="fw-bold mb-0"><i class="bi bi-box-seam"></i>Data Produk</h3>
-            <a href="{{ route('produk.create') }}"
-               class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
-                <i class="bi bi-plus-circle"></i>
-                Tambah
-            </a>
+            <div class="d-flex gap-2">
+                @can('export produk')
+                    <a href="{{ route('produk.export.excel') }}" class="btn btn-outline-secondary btn-sm">Excel</a>
+                    <a href="{{ route('produk.export.csv') }}" class="btn btn-outline-secondary btn-sm">CSV</a>
+                    <a href="{{ route('produk.export.pdf') }}" class="btn btn-outline-secondary btn-sm">PDF</a>
+                @endcan
+                <a href="{{ route('produk.create') }}"
+                   class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+                    <i class="bi bi-plus-circle"></i>
+                    Tambah
+                </a>
+            </div>
         </div>
 
         {{-- Panel --}}
@@ -44,12 +51,37 @@
                     <table class="table dashboard-table align-middle">
                         <thead>
                             <tr>
-                                <th>No</th>
-                                <th>Produk</th>
-                                <th>Gambar</th>
-                                <th>Harga</th>
-                                <th>Stok</th>
-                                <th>Dibuat</th>
+                                @php
+                                    $cols = [
+                                        'id_produk' => 'No',
+                                        'nama_produk' => 'Produk',
+                                        'gambar_produk' => 'Gambar',
+                                        'harga_satuan' => 'Harga',
+                                        'stok_tersedia' => 'Stok',
+                                        'created_at' => 'Dibuat',
+                                    ];
+                                    $currentSort = request('sort');
+                                    $currentDir = request('direction', 'asc');
+                                @endphp
+                                @foreach($cols as $key => $label)
+                                    <th>
+                                        @if(in_array($key, ['gambar_produk']))
+                                            {{ $label }}
+                                        @else
+                                            @php
+                                                $nextDir = ($currentSort === $key && $currentDir === 'asc') ? 'desc' : 'asc';
+                                                $query = array_merge(request()->query(), ['sort' => $key, 'direction' => $nextDir]);
+                                                $url = url()->current() . '?' . http_build_query($query);
+                                            @endphp
+                                            <a href="{{ $url }}" class="text-decoration-none text-reset">
+                                                {{ $label }}
+                                                @if($currentSort === $key)
+                                                    <i class="bi bi-arrow-{{ $currentDir === 'asc' ? 'up' : 'down' }}-short"></i>
+                                                @endif
+                                            </a>
+                                        @endif
+                                    </th>
+                                @endforeach
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -124,6 +156,13 @@
                         @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                {{-- Pagination links (server-side) --}}
+                <div class="mt-3 d-flex justify-content-end">
+                    @if(method_exists($KurirData, 'links'))
+                        {{ $KurirData->withQueryString()->links() }}
+                    @endif
                 </div>
 
             </div>

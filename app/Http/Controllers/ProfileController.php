@@ -33,6 +33,26 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
+    /**
+     * Toggle dark mode preference for the current user (or session fallback)
+     */
+    public function toggleDarkMode(Request $request)
+    {
+        $user = $request->user();
+        if ($user) {
+            if (array_key_exists('dark_mode', $user->getAttributes())) {
+                $user->dark_mode = !$user->dark_mode;
+                $user->save();
+                return response()->json(['dark_mode' => (bool)$user->dark_mode]);
+            }
+        }
+
+        // session fallback
+        $current = session('dark_mode', false);
+        session(['dark_mode' => !$current]);
+        return response()->json(['dark_mode' => !$current]);
+    }
+
     
     public function destroy(Request $request): RedirectResponse
     {

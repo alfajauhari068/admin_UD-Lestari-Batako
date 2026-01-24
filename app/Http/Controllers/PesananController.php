@@ -17,6 +17,50 @@ class PesananController extends Controller
         return view('pesanan.dashboard_pesanan', compact('pesanans'));
     }
 
+    public function __construct()
+    {
+        // Require authentication for mutation routes
+        $this->middleware('auth')->except(['index', 'show', 'detail', 'create', 'createDetailPesanan']);
+
+        // Apply Spatie permission middleware when available (non-fatal if not installed)
+        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
+            $this->middleware('permission:create pesanan')->only(['create', 'store']);
+            $this->middleware('permission:export pesanan')->only(['exportCsv']);
+            $this->middleware('permission:edit pesanan')->only(['edit', 'update']);
+            $this->middleware('permission:delete pesanan')->only(['destroy']);
+        }
+    }
+
+    /**
+     * Export pesanan as CSV (permission: export pesanan)
+     */
+    public function exportCsv()
+    {
+        $user = auth()->user();
+        if (!$user || !$user->can('export pesanan')) {
+            abort(403);
+        }
+
+        $pesanans = Pesanan::with('pelanggan')->get();
+        $filename = 'pesanan_export_' . date('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function () use ($pesanans) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['id_pesanan', 'id_pelanggan', 'pelanggan_nama', 'catatan', 'created_at']);
+            foreach ($pesanans as $p) {
+                fputcsv($handle, [$p->id_pesanan, $p->id_pelanggan, optional($p->pelanggan)->nama, strip_tags($p->catatan ?? ''), optional($p->created_at)->toDateTimeString()]);
+            }
+            fclose($handle);
+        };
+
+        return \Illuminate\Support\Facades\Response::stream($callback, 200, $headers);
+    }
+
 
     public function create()
     {
@@ -46,9 +90,12 @@ class PesananController extends Controller
             $jumlahs = is_array($request->input('jumlah')) ? $request->input('jumlah') : [$request->input('jumlah')];
             $errors = [];
 
+            // Batch-load produk to avoid per-item queries
+            $produkMap = Produk::whereIn('id_produk', $ids)->get()->keyBy('id_produk');
+
             foreach ($ids as $index => $id_produk) {
                 $jumlah = isset($jumlahs[$index]) ? (int) $jumlahs[$index] : 0;
-                $produk = Produk::where('id_produk', $id_produk)->first();
+                $produk = $produkMap->get($id_produk);
                 if (!$produk) {
                     $errors["id_produk.$index"] = 'Produk tidak ditemukan.';
                     continue;
@@ -78,9 +125,15 @@ class PesananController extends Controller
                     $ids = is_array($request->input('id_produk')) ? $request->input('id_produk') : [$request->input('id_produk')];
                     $jumlahs = is_array($request->input('jumlah')) ? $request->input('jumlah') : [$request->input('jumlah')];
 
+                    // Load fresh product models inside transaction to ensure correct stock
+                    $produkList = Produk::whereIn('id_produk', $ids)->get()->keyBy('id_produk');
+
                     foreach ($ids as $index => $id_produk) {
                         $jumlah = isset($jumlahs[$index]) ? (int) $jumlahs[$index] : 1;
-                        $produk = Produk::where('id_produk', $id_produk)->firstOrFail();
+                        $produk = $produkList->get($id_produk);
+                        if (!$produk) {
+                            throw new \Exception('Produk tidak ditemukan: ' . $id_produk);
+                        }
 
                         // reduceStock will throw if insufficient
                         $produk->reduceStock($jumlah);
@@ -131,8 +184,15 @@ class PesananController extends Controller
         $pesanan->detailPesanan()->delete();
         $total = 0;
 
+        // Batch-load produk referenced in the update to avoid N+1 queries
+        $ids = is_array($request->id_produk) ? $request->id_produk : [$request->id_produk];
+        $produkMap = Produk::whereIn('id_produk', $ids)->get()->keyBy('id_produk');
+
         foreach ($request->id_produk as $i => $id_produk) {
-            $produk = Produk::find($id_produk);
+            $produk = $produkMap->get($id_produk);
+            if (!$produk) {
+                continue; // skip missing product (validation should prevent this)
+            }
             $jumlah = $request->jumlah[$i];
             $subtotal = $produk->harga_satuan * $jumlah;
 

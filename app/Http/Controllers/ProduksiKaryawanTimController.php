@@ -18,6 +18,14 @@ class ProduksiKaryawanTimController extends Controller
     public function __construct(GajiTimService $gajiTimService)
     {
         $this->gajiTimService = $gajiTimService;
+        // Require auth for mutation routes; keep read routes public
+        $this->middleware('auth')->except(['index', 'show', 'detail', 'detailByProduction', 'editByProduction']);
+
+        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
+            $this->middleware('permission:create tim produksi')->only(['create', 'store']);
+            $this->middleware('permission:edit tim produksi')->only(['edit', 'update', 'editByProduction']);
+            $this->middleware('permission:delete tim produksi')->only(['destroy', 'destroyByProduction']);
+        }
     }
 
     public function index()
@@ -27,16 +35,20 @@ class ProduksiKaryawanTimController extends Controller
             ->distinct()
             ->get();
 
-        $produksiKaryawanTims = $distinct->map(function ($g) {
+        // Preload Produksi models for the distinct produksi ids to avoid N+1
+        $produksiIds = $distinct->pluck('id_produksi')->unique()->all();
+        $produksiMap = Produksi::whereIn('id_produksi', $produksiIds)->get()->keyBy('id_produksi');
+
+        $produksiKaryawanTims = $distinct->map(function ($g) use ($produksiMap) {
             $total_unit = ProduksiKaryawanTim::where('id_produksi', $g->id_produksi)
                 ->whereDate('tanggal_produksi', $g->tanggal_produksi)
                 ->sum('jumlah_unit');
 
-            $produksi = Produksi::find($g->id_produksi);
+            $produksi = $produksiMap->get($g->id_produksi);
 
-            // Hitung gaji tim via service (so view remains logic-free)
+            // Hitung gaji tim via service (pass produksi model to avoid extra lookup)
             try {
-                $gaji = $this->gajiTimService->hitungGajiTim($g->id_produksi, Carbon::parse($g->tanggal_produksi)->format('Y-m-d'));
+                $gaji = $this->gajiTimService->hitungGajiTim($g->id_produksi, Carbon::parse($g->tanggal_produksi)->format('Y-m-d'), $produksi);
                 $total_gaji_tim = $gaji['total_upah_tim'] ?? 0;
                 $jumlah_anggota = $gaji['jumlah_anggota'] ?? ProduksiKaryawanTim::where('id_produksi', $g->id_produksi)->whereDate('tanggal_produksi', $g->tanggal_produksi)->distinct('id_karyawan')->count('id_karyawan');
             } catch (Exception $e) {
@@ -187,7 +199,7 @@ class ProduksiKaryawanTimController extends Controller
                 ->get();
 
             // Hitung gaji tim menggunakan service (aggregasi by produksi + tanggal)
-            $gaji = $this->gajiTimService->hitungGajiTim($record->id_produksi, $record->tanggal_produksi->format('Y-m-d'));
+            $gaji = $this->gajiTimService->hitungGajiTim($record->id_produksi, $record->tanggal_produksi->format('Y-m-d'), $record->produksi);
 
             // Map service keys to the required output names
             $total_unit_tim = $gaji['total_unit_tim'];
@@ -245,7 +257,8 @@ class ProduksiKaryawanTimController extends Controller
                 ->get();
 
             // Hitung gaji tim menggunakan service (aggregasi by produksi + tanggal)
-            $gaji = $this->gajiTimService->hitungGajiTim($id, $tanggalCarbon->format('Y-m-d'));
+            $produksi = Produksi::find($id);
+            $gaji = $this->gajiTimService->hitungGajiTim($id, $tanggalCarbon->format('Y-m-d'), $produksi);
 
             $total_unit_tim = $gaji['total_unit_tim'] ?? $anggotaTim->sum('jumlah_unit');
             $total_gaji_tim = $gaji['total_upah_tim'] ?? 0;

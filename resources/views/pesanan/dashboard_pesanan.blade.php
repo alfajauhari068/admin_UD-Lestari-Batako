@@ -24,10 +24,15 @@
                 <h4 class="fw-bold text-primary"><i class="bi bi-cart"></i>Data Pesanan</h4>
             </div>
             <div class="col-auto">
-                <a href="{{ route('pesanan.create') }}" class="btn btn-primary rounded-circle shadow-sm d-flex justify-content-center align-items-center p-2"
-                   data-bs-toggle="tooltip" title="Tambah Pesanan">
-                    <i class="bi bi-plus-circle fs-4"></i>
-                </a>
+                <div class="d-flex align-items-center gap-2">
+                    @can('export pesanan')
+                        <a href="{{ route('pesanan.export.csv') }}" class="btn btn-outline-secondary btn-sm">Export CSV</a>
+                    @endcan
+                    <a href="{{ route('pesanan.create') }}" class="btn btn-primary rounded-circle shadow-sm d-flex justify-content-center align-items-center p-2"
+                       data-bs-toggle="tooltip" title="Tambah Pesanan">
+                        <i class="bi bi-plus-circle fs-4"></i>
+                    </a>
+                </div>
             </div>
         </div>
 

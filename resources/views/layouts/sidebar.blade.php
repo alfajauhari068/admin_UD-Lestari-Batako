@@ -210,10 +210,10 @@
 <div class="sidebar layout-sidebar" id="sidebar">
     <div class="text-center sidebar-brand-wrapper d-flex align-items-center justify-content-center pt-5">
         <a class="sidebar-brand brand-logo" href="index.html">
-            <img src="..\assets\Logo-LB.jpg" alt="logo" />
+            <img src="{{ asset('assets/Logo-LB.jpg') }}" alt="logo" />
         </a>
         <a class="sidebar-brand brand-logo-mini d-md-none" href="index.html">
-            <img src="assets/images/logo-mini.svg" alt="logo-mini" />
+            <img src="{{ asset('assets/images/logo-mini.svg') }}" alt="logo-mini" />
         </a>
     </div>
     <hr class="border-light">
@@ -243,11 +243,18 @@
                 <i class="bi bi-truck me-2"></i> Pengiriman
             </a>
         </li>
+        @php
+            $user = auth()->user();
+            // If Spatie role methods exist, require 'admin' role for Karyawan menu; otherwise show by default
+            $showKaryawan = $user && method_exists($user, 'hasRole') ? $user->hasRole('admin') : true;
+        @endphp
+        @if($showKaryawan)
         <li class="nav-item mb-2">
             <a href="{{ route('karyawans.index') }}" class="nav-link {{ request()->is('karyawans') || request()->is('karyawans/*') ? 'active' : 'link-dark' }}">
                 <i class="bi bi-person-badge me-2"></i> Karyawan
             </a>
         </li>
+        @endif
         <li class="nav-item mb-2">
             <a href="{{ route('produksi.index') }}" class="nav-link {{ request()->is('produksi') || request()->is('produksi/*') ? 'active' : 'link-dark' }}">
                 <i class="bi bi-gear-wide-connected me-2"></i> Produksi
@@ -260,21 +267,28 @@
         </li>
     </ul>
     <hr class="border-light">
-    <div class="dropdown text-center">
-        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {{ Auth::user()->name ?? 'User' }}
-        </button>
-        <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a></li>
-            <li><a class="dropdown-item" href="/settings">Settings</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="dropdown-item">Logout</button>
-                </form>
-            </li>
-        </ul>
+    <div class="text-center mb-3">
+        <div class="d-flex justify-content-center align-items-center gap-2 px-3">
+            <button id="sidebar-dark-toggle" class="btn btn-sm btn-outline-light" title="Toggle dark mode">
+                <i class="bi bi-moon-stars"></i>
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ Auth::user()->name ?? 'User' }}
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a></li>
+                    <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
 

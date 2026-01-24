@@ -14,6 +14,17 @@ class PelangganController extends Controller
         return view('pelanggan.dashboard_pelanggan', ['KurirData' => $pelanggan]);
     }
 
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index', 'pesan', 'riwayat', 'create']);
+
+        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
+            $this->middleware('permission:create pelanggan')->only(['create', 'store']);
+            $this->middleware('permission:edit pelanggan')->only(['edit', 'update']);
+            $this->middleware('permission:delete pelanggan')->only(['destroy']);
+        }
+    }
+
     public function pesan()
     {
         $pesanans = Pesanan::with('pelanggan')->get();

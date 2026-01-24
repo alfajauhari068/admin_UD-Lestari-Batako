@@ -14,6 +14,17 @@ class KaryawanController extends Controller
         return view('karyawans.dashboard_kariawan', compact('karyawans'));
     }
 
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index', 'create', 'show']);
+
+        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
+            $this->middleware('permission:create karyawan')->only(['create', 'store']);
+            $this->middleware('permission:edit karyawan')->only(['edit', 'update']);
+            $this->middleware('permission:delete karyawan')->only(['destroy']);
+        }
+    }
+
     public function create()
     {
         return view('karyawans.create_kariawan');

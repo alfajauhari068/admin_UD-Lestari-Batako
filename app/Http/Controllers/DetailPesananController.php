@@ -18,6 +18,17 @@ class DetailPesananController extends Controller
 
         return view('pesanan.detail_pesanan', compact('detailpesanans'));
     }
+    
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index', 'create', 'show']);
+
+        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
+            $this->middleware('permission:create detail pesanan')->only(['create', 'store']);
+            $this->middleware('permission:edit detail pesanan')->only(['edit', 'update']);
+            $this->middleware('permission:delete detail pesanan')->only(['destroy']);
+        }
+    }
     public function create($id_pesanan)
     {
         $pesanan = Pesanan::findOrFail($id_pesanan);
@@ -48,11 +59,12 @@ class DetailPesananController extends Controller
         $ids = is_array($request->input('id_produk')) ? $request->input('id_produk') : [$request->input('id_produk')];
         $jumlahs = is_array($request->input('jumlah')) ? $request->input('jumlah') : [$request->input('jumlah')];
 
-        // Pre-transaction validation: ensure each jumlah is integer|min:1|max:stok_tersedia
+        // Pre-transaction validation: batch-load produk to avoid per-item queries
+        $produkMap = Produk::whereIn('id_produk', $ids)->get()->keyBy('id_produk');
         $errors = [];
         foreach ($ids as $index => $id_produk) {
             $jumlah = isset($jumlahs[$index]) ? (int) $jumlahs[$index] : 0;
-            $produk = Produk::where('id_produk', $id_produk)->first();
+            $produk = $produkMap->get($id_produk);
             if (!$produk) {
                 $errors["id_produk.$index"] = 'Produk tidak ditemukan.';
                 continue;
@@ -72,11 +84,17 @@ class DetailPesananController extends Controller
 
         try {
             DB::transaction(function () use ($ids, $jumlahs, $id_pesanan) {
+                // Load fresh product models inside the transaction
+                $produkList = Produk::whereIn('id_produk', $ids)->get()->keyBy('id_produk');
                 foreach ($ids as $index => $id_produk) {
                     $jumlah = isset($jumlahs[$index]) ? (int) $jumlahs[$index] : 1;
 
+                    $produk = $produkList->get($id_produk);
+                    if (!$produk) {
+                        throw new \Exception('Produk tidak ditemukan: ' . $id_produk);
+                    }
+
                     // Reduce stock on Produk model; this will throw if insufficient
-                    $produk = Produk::where('id_produk', $id_produk)->firstOrFail();
                     $produk->reduceStock($jumlah);
 
                     // Create detail record
