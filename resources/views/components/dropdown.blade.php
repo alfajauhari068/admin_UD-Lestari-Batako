@@ -1,43 +1,31 @@
-@props(['align' => 'right', 'width' => '48', 'contentClasses' => 'py-1 bg-white'])
+{{-- Dropdown Component
+     Consistent dropdown with Bootstrap and dark mode support
+     Usage:
+     <x-dropdown align="right">
+         <x-slot:trigger>
+             <x-btn>Options <i class="bi bi-chevron-down"></i></x-btn>
+         </x-slot:trigger>
+         <x-dropdown-link href="/profile">Profile</x-dropdown-link>
+         <x-dropdown-link href="/settings">Settings</x-dropdown-link>
+     </x-dropdown>
+--}}
+@props([
+    'align' => 'right',
+    'trigger' => null
+])
 
 @php
-switch ($align) {
-    case 'left':
-        $alignmentClasses = 'ltr:origin-top-left rtl:origin-top-right start-0';
-        break;
-    case 'top':
-        $alignmentClasses = 'origin-top';
-        break;
-    case 'right':
-    default:
-        $alignmentClasses = 'ltr:origin-top-right rtl:origin-top-left end-0';
-        break;
-}
-
-switch ($width) {
-    case '48':
-        $width = 'w-48';
-        break;
-}
+    $alignmentClasses = match($align) {
+        'left' => 'dropdown-menu-start',
+        'right' => 'dropdown-menu-end',
+        default => 'dropdown-menu-end'
+    };
 @endphp
 
-<div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
-    <div @click="open = ! open">
-        {{ $trigger }}
-    </div>
+<div class="dropdown">
+    {{ $trigger }}
 
-    <div x-show="open"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-75"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="absolute z-50 mt-2 {{ $width }} rounded-md shadow-lg {{ $alignmentClasses }}"
-            style="display: none;"
-            @click="open = false">
-        <div class="rounded-md ring-1 ring-black ring-opacity-5 {{ $contentClasses }}">
-            {{ $content }}
-        </div>
-    </div>
+    <ul class="dropdown-menu {{ $alignmentClasses }}">
+        {{ $slot }}
+    </ul>
 </div>

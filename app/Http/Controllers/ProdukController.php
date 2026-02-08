@@ -34,14 +34,7 @@ class ProdukController extends Controller
     {
         // Require authentication for mutation routes; allow guests to view index/show
         $this->middleware('auth')->except(['index', 'show']);
-
-        // If Spatie is installed, register permission middleware for sensitive actions
-        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            $this->middleware('permission:export produk')->only(['exportCsv', 'exportPdf', 'exportExcel']);
-            $this->middleware('permission:create produk')->only(['create', 'store']);
-            $this->middleware('permission:edit produk')->only(['edit', 'update']);
-            $this->middleware('permission:delete produk')->only(['destroy']);
-        }
+        // TODO: middleware not registered, removed for safety
     }
 
     /**

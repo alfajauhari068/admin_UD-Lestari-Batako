@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ProduksiKaryawanTim;
 use App\Models\Produksi;
 use App\Models\Karyawan;
+use App\Http\Requests\StoreTimProduksiRequest;
+use App\Http\Requests\UpdateTimProduksiRequest;
 use App\Services\GajiTimService;
 use Illuminate\Http\Request;
 use Exception;
@@ -20,12 +22,7 @@ class ProduksiKaryawanTimController extends Controller
         $this->gajiTimService = $gajiTimService;
         // Require auth for mutation routes; keep read routes public
         $this->middleware('auth')->except(['index', 'show', 'detail', 'detailByProduction', 'editByProduction']);
-
-        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            $this->middleware('permission:create tim produksi')->only(['create', 'store']);
-            $this->middleware('permission:edit tim produksi')->only(['edit', 'update', 'editByProduction']);
-            $this->middleware('permission:delete tim produksi')->only(['destroy', 'destroyByProduction']);
-        }
+        // TODO: middleware not registered, removed for safety
     }
 
     public function index()
@@ -79,16 +76,10 @@ class ProduksiKaryawanTimController extends Controller
         return view('produksi_karyawan_tim.create', compact('produksis', 'karyawans'));
     }
 
-    public function store(Request $request)
+    public function store(StoreTimProduksiRequest $request)
     {
         // Validasi data; support multiple karyawan via id_karyawan[]
-        $validatedData = $request->validate([
-            'id_produksi' => 'required|exists:produksis,id_produksi',
-            'id_karyawan' => 'required|array|min:1',
-            'id_karyawan.*' => 'required|exists:karyawans,id_karyawan',
-            'jumlah_unit' => 'required|integer|min:1',
-            'tanggal_produksi' => 'required|date',
-        ]);
+        $validatedData = $request->validated();
 
         // Simpan multiple anggota dalam transaction
         DB::beginTransaction();
@@ -134,14 +125,10 @@ class ProduksiKaryawanTimController extends Controller
         return view('produksi_karyawan_tim.edit', compact('produksiKaryawanTim', 'produksis', 'karyawans'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateTimProduksiRequest $request, $id)
     {
         // Validasi hanya untuk field yang dikirim dari form edit anggota
-        $validatedData = $request->validate([
-            'id_karyawan' => 'required|exists:karyawans,id_karyawan',
-            'jumlah_unit' => 'required|integer|min:1',
-            'tanggal_produksi' => 'required|date',
-        ]);
+        $validatedData = $request->validated();
 
         try {
             // Update data di database

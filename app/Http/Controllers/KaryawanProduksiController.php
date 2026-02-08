@@ -20,12 +20,6 @@ class KaryawanProduksiController extends Controller
     public function __construct()
     {
         $this->middleware('auth')->except(['index', 'create']);
-
-        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            $this->middleware('permission:create produksi karyawan')->only(['create', 'store']);
-            $this->middleware('permission:edit produksi karyawan')->only(['edit', 'update']);
-            $this->middleware('permission:delete produksi karyawan')->only(['destroy']);
-        }
     }
 
     public function create()
@@ -74,10 +68,10 @@ class KaryawanProduksiController extends Controller
         return redirect()->route('karyawan_produksi.index')->with('success', 'Data produksi karyawan berhasil ditambahkan!');
     }
 
-    public function edit($id)
+    public function edit($id_karyawan_produksi)
     {
         // Ambil data produksi karyawan tim berdasarkan ID
-        $produksiKaryawan = ProduksiKaryawanTim::findOrFail($id);
+        $produksiKaryawan = ProduksiKaryawanTim::findOrFail($id_karyawan_produksi);
 
         // Ambil data karyawan dan produksi untuk form
         $karyawans = Karyawan::all();
@@ -87,7 +81,7 @@ class KaryawanProduksiController extends Controller
         return view('karyawan_produksi.edit_produksi_karyawan', compact('produksiKaryawan', 'karyawans', 'produksis'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id_karyawan_produksi)
     {
         // Validasi data
         $validatedData = $request->validate([
@@ -98,17 +92,17 @@ class KaryawanProduksiController extends Controller
         ]);
 
         // Update data di database
-        $produksiKaryawan = ProduksiKaryawanTim::findOrFail($id);
+        $produksiKaryawan = ProduksiKaryawanTim::findOrFail($id_karyawan_produksi);
         $produksiKaryawan->update($validatedData);
 
         // Redirect ke halaman dashboard dengan pesan sukses
         return redirect()->route('karyawan_produksi.index')->with('success', 'Data produksi karyawan berhasil diperbarui!');
     }
 
-    public function destroy($id)
+    public function destroy($id_karyawan_produksi)
     {
         // Hapus data produksi karyawan berdasarkan ID
-        $produksiKaryawan = ProduksiKaryawanTim::findOrFail($id);
+        $produksiKaryawan = ProduksiKaryawanTim::findOrFail($id_karyawan_produksi);
         $produksiKaryawan->delete();
 
         // Redirect ke halaman dashboard dengan pesan sukses

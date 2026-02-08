@@ -9,22 +9,16 @@ class PengirimanController extends Controller
 {
     public function index()
     {
-        
+
         $pengirimans = Pengiriman::with('pesanan.pelanggan')->get();
 
-        
+
         return view('pengiriman.dashboard_pengiriman', compact('pengirimans'));
     }
 
     public function __construct()
     {
         $this->middleware('auth')->except(['index', 'show', 'create']);
-
-        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            $this->middleware('permission:create pengiriman')->only(['create', 'store']);
-            $this->middleware('permission:edit pengiriman')->only(['edit', 'update']);
-            $this->middleware('permission:delete pengiriman')->only(['destroy']);
-        }
     }
 
     public function create($id_pesanan)
@@ -34,22 +28,22 @@ class PengirimanController extends Controller
     }
 
     public function store(Request $request)
-{
-    
-    $validatedData = $request->validate([
-        'id_pesanan' => 'required|exists:pesanans,id_pesanan',
-        'id_pelanggan' => 'required|exists:pelanggans,id_pelanggan',
-        'alamat_pengiriman' => 'required|string|max:255',
-        'tanggal_pengiriman' => 'required|date',
-        'jasa_kurir' => 'required|string|max:100',
-        'no_resi' => 'nullable|string|max:50',
-    ]);
+    {
 
-    Pengiriman::create($validatedData);
+        $validatedData = $request->validate([
+            'id_pesanan' => 'required|exists:pesanans,id_pesanan',
+            'id_pelanggan' => 'required|exists:pelanggans,id_pelanggan',
+            'alamat_pengiriman' => 'required|string|max:255',
+            'tanggal_pengiriman' => 'required|date',
+            'jasa_kurir' => 'required|string|max:100',
+            'no_resi' => 'nullable|string|max:50',
+        ]);
 
-    
-    return redirect()->route('pesanan.index')->with('success', 'Pengiriman berhasil diatur.');
-}
+        Pengiriman::create($validatedData);
+
+
+        return redirect()->route('pesanan.index')->with('success', 'Pengiriman berhasil diatur.');
+    }
 
 
     public function edit($id)
@@ -78,12 +72,12 @@ class PengirimanController extends Controller
         $pengiriman = Pengiriman::with(['pesanan.pelanggan'])->findOrFail($id_pengiriman);
         return view('pengiriman.detail_pengiriman', compact('pengiriman'));
     }
-    
-public function destroy($id)
-{
-    $pengiriman = Pengiriman::findOrFail($id);
-    $pengiriman->delete();
 
-    return redirect()->route('pengiriman.index')->with('success', 'Pengiriman berhasil dihapus.');
-}
+    public function destroy($id)
+    {
+        $pengiriman = Pengiriman::findOrFail($id);
+        $pengiriman->delete();
+
+        return redirect()->route('pengiriman.index')->with('success', 'Pengiriman berhasil dihapus.');
+    }
 }

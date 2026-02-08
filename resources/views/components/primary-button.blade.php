@@ -1,3 +1,16 @@
-<button {{ $attributes->merge(['type' => 'submit', 'class' => 'inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150']) }}>
+{{-- Primary Button Component
+     Consistent primary button styling with dark mode support
+     Usage: <x-primary-button>Click me</x-primary-button>
+--}}
+@props([
+    'type' => 'submit',
+    'disabled' => false
+])
+
+<button
+    type="{{ $type }}"
+    {{ $attributes->merge(['class' => 'btn btn-primary d-inline-flex align-items-center justify-content-center gap-2 px-4 py-2 transition-all ease-in-out']) }}
+    @if($disabled) disabled @endif
+>
     {{ $slot }}
 </button>

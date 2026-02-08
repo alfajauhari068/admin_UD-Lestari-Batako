@@ -18,7 +18,12 @@ return new class extends Migration {
     Schema::table('produksis', function (Blueprint $table) {
       // Tambahkan kolom jumlah_per_unit jika belum ada
       if (!Schema::hasColumn('produksis', 'jumlah_per_unit')) {
-        $table->integer('jumlah_per_unit')->default(100)->after('nama_produksi');
+        // Gunakan after('id_produksi') jika nama_produksi sudah dihapus
+        if (Schema::hasColumn('produksis', 'nama_produksi')) {
+          $table->integer('jumlah_per_unit')->default(100)->after('nama_produksi');
+        } else {
+          $table->integer('jumlah_per_unit')->default(100)->after('id_produksi');
+        }
       }
     });
   }

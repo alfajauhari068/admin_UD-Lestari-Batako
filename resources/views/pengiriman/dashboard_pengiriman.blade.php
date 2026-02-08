@@ -1,123 +1,117 @@
 @extends('layouts.app')
 
+@section('title', 'Daftar Pengiriman')
+
 @section('content')
-<div class="page-container">
+<div class="page-container p-fluid">
 
-{{-- Header --}}
-        <section class="dashboard-header">
-            <h1>Daftar Pengiriman</h1>
-            <p>Manajemen pengiriman UD. Lestari Batako</p>
-        </section>
+    {{-- Header --}}
+    <section class="dashboard-header">
+        <h1>Daftar Pengiriman</h1>
+        <p>Manajemen pengiriman UD. Lestari Batako</p>
+    </section>
 
-        {{-- Breadcrumb --}}
-        <div class="pt-">
-            @component('components.breadcrumb')
-                @slot('breadcrumbs', [
-                    ['name' => 'Pengiriman', 'url' => route('pengiriman.index')]
-                ])
-            @endcomponent
+    {{-- Breadcrumb --}}
+    <div class="">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Pengiriman</li>
+            </ol>
+        </nav>
+    </div>
+
+    {{-- Header Actions --}}
+    <div class="row justify-content-between align-items-center mb-4">
+        <div class="col-auto">
+            <h4 class="fw-bold text-primary">
+                <i class="bi bi-truck-fill me-2"></i>Daftar Pengiriman
+            </h4>
         </div>
-
-        {{-- Judul Halaman --}}
-        <div class="row justify-content-between align-items-center mb-">
-            <div class="col-auto">
-                <h4 class="fw-bold text-primary"><i class="bi bi-truck"></i>Data Pengiriman</h4>
-            </div>
+        <div class="col-auto">
+            <button class="btn btn-primary shadow-sm d-flex align-items-center gap-1" disabled title="Tambah pengiriman dari halaman pesanan">
+                <i class="bi bi-plus-circle-fill"></i> Tambah Pengiriman
+            </button>
         </div>
+    </div>
 
-        {{-- Notifikasi --}}
-        @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-            <i class="bi bi-check-circle-fill text-success me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
+    {{-- Notifikasi --}}
+    @if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
 
-        @if($errors->any())
-        <div class="alert alert-danger mt-3 shadow-sm">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li><i class="bi bi-exclamation-circle-fill text-danger me-2"></i>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
+    {{-- Table Card --}}
+    <div class="table-industrial-wrapper">
+        <div class="page-container">
+            <div class="table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th><center>No</center></th>
+                            <th><center>Kode Pengiriman</center></th>
+                            <th><center>Pesanan</center></th>
+                            <th><center>Tanggal Kirim</center></th>
+                            <th><center>Status</center></th>
+                            <th><center>Aksi</center></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($pengirimans as $pengiriman)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $pengiriman->kode_pengiriman }}</td>
+                            <td>{{ $pengiriman->pesanan->kode_pesanan ?? 'N/A' }}</td>
+                            <td>{{ \Carbon\Carbon::parse($pengiriman->tgl_kirim)->format('d M Y') }}</td>
+                            <td>
+                                <span class="badge bg-{{ $pengiriman->status === 'diterima' ? 'success' : ($pengiriman->status === 'gagal' ? 'danger' : 'warning') }}">
+                                    {{ ucfirst($pengiriman->status) }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    {{-- Detail --}}
+                                    <a href="{{ route('pengiriman.show', $pengiriman->id_pengiriman) }}"
+                                       class="btn btn-sm btn-info btn-icon"
+                                       data-bs-toggle="tooltip" title="Detail Pengiriman">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
 
-        {{-- Tabel Data Pengiriman --}}
-        <div class="table-industrial-wrapper">
-            <div class="p-3">
-                <div class="table-responsive">
-                    <table class="table custom-table striped">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Nama Pelanggan</th>
-                                <th>Alamat Pengiriman</th>
-                                <th>Tanggal Pengiriman</th>
-                                <th>Jasa Kirim</th>
-                                <th>No Resi</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($pengirimans as $pengiriman)
-                            <tr class="text-center">
-                                <td class="align-middle">{{ $loop->iteration }}</td>
-                                <td>{{ $pengiriman->pesanan->pelanggan->nama }}</td>
-                                <td>{{ $pengiriman->alamat_pengiriman }}</td>
-                                <td>
-                                    {{ $pengiriman->tanggal_pengiriman ? $pengiriman->tanggal_pengiriman->format('d M Y') : '-' }}
-                                </td>
-                                <td>{{ $pengiriman->jasa_kurir ?? '-' }}</td>
-                                <td>{{ $pengiriman->no_resi ?? '-' }}</td>
-                                <td>
-                                    <div class="d-flex justify-content-center gap-2">
+                                    {{-- Edit --}}
+                                    <a href="{{ route('pengiriman.edit', $pengiriman->id_pengiriman) }}"
+                                       class="btn btn-sm btn-warning btn-icon"
+                                       data-bs-toggle="tooltip" title="Edit Pengiriman">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
 
-                                        {{-- Tombol Detail --}}
-                                        <a href="{{ route('pengiriman.show', $pengiriman->id_pengiriman) }}"
-                                           class="btn btn-primary btn-sm rounded-circle"
-                                           data-bs-toggle="tooltip" title="Lihat Detail">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-
-
-                                        {{-- Tombol Edit --}}
-                                        <a href="{{ route('pengiriman.edit', $pengiriman->id_pengiriman) }}"
-                                           class="btn btn-warning btn-sm rounded-circle"
-                                           data-bs-toggle="tooltip" title="Edit">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-
-                                        {{-- Tombol Hapus --}}
-                                        <form action="{{ route('pengiriman.destroy', $pengiriman->id_pengiriman) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus pengiriman ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm rounded-circle"
-                                                    data-bs-toggle="tooltip" title="Hapus">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-muted fst-italic">Belum ada data pengiriman.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="card-footer text-end small text-muted bg-white">
-                UD Lestari Batako &copy; {{ date('Y') }}
+                                    {{-- Hapus --}}
+                                    <form action="{{ route('pengiriman.destroy', $pengiriman->id_pengiriman) }}" method="POST"
+                                          onsubmit="return confirm('Yakin hapus pengiriman ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="btn btn-sm btn-danger btn-icon"
+                                                data-bs-toggle="tooltip" title="Hapus Pengiriman">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6">Belum ada pengiriman.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Tooltip Init --}}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');

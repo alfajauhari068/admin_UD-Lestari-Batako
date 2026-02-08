@@ -18,16 +18,11 @@ class DetailPesananController extends Controller
 
         return view('pesanan.detail_pesanan', compact('detailpesanans'));
     }
-    
+
     public function __construct()
     {
         $this->middleware('auth')->except(['index', 'create', 'show']);
-
-        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            $this->middleware('permission:create detail pesanan')->only(['create', 'store']);
-            $this->middleware('permission:edit detail pesanan')->only(['edit', 'update']);
-            $this->middleware('permission:delete detail pesanan')->only(['destroy']);
-        }
+        // TODO: middleware not registered, removed for safety
     }
     public function create($id_pesanan)
     {

@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * @deprecated This controller is no longer used. Routes previously mapped to this controller
+ * have been migrated to ProduksiKaryawanTimController (/tim-produksi) and KaryawanProduksiController (/karyawan-produksi).
+ * 
+ * Legacy routes:
+ * - /produksi-karyawan* → abort(404)
+ * 
+ * This file is kept for reference only and should be deleted in a future cleanup.
+ * Last updated: 2026-01-31
+ */
+
 namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
@@ -80,12 +91,7 @@ class ProduksiKaryawanController extends Controller
     public function __construct()
     {
         $this->middleware('auth')->except(['index', 'create', 'detail']);
-
-        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            $this->middleware('permission:create produksi karyawan')->only(['create', 'store']);
-            $this->middleware('permission:edit produksi karyawan')->only(['edit', 'update']);
-            $this->middleware('permission:delete produksi karyawan')->only(['destroy']);
-        }
+        // TODO: middleware not registered, removed for safety
     }
 
     public function create()

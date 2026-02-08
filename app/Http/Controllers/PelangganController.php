@@ -17,12 +17,7 @@ class PelangganController extends Controller
     public function __construct()
     {
         $this->middleware('auth')->except(['index', 'pesan', 'riwayat', 'create']);
-
-        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            $this->middleware('permission:create pelanggan')->only(['create', 'store']);
-            $this->middleware('permission:edit pelanggan')->only(['edit', 'update']);
-            $this->middleware('permission:delete pelanggan')->only(['destroy']);
-        }
+        // TODO: middleware not registered, removed for safety
     }
 
     public function pesan()

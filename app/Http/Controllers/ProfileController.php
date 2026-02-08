@@ -11,15 +11,22 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    
-    public function edit(Request $request): View
+
+    public function index(Request $request): View
     {
-        return view('profile.edit', [
+        return view('profile.index', [
             'user' => $request->user(),
         ]);
     }
 
-    
+    public function edit(Request $request): View
+    {
+        return view('profile.index', [
+            'user' => $request->user(),
+        ]);
+    }
+
+
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
@@ -30,7 +37,24 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.index')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update user password
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'confirmed', 'min:8'],
+        ]);
+
+        $request->user()->update([
+            'password' => bcrypt($validated['password']),
+        ]);
+
+        return Redirect::route('profile.index')->with('password_success', 'Password berhasil diperbarui.');
     }
 
     /**
@@ -43,7 +67,7 @@ class ProfileController extends Controller
             if (array_key_exists('dark_mode', $user->getAttributes())) {
                 $user->dark_mode = !$user->dark_mode;
                 $user->save();
-                return response()->json(['dark_mode' => (bool)$user->dark_mode]);
+                return response()->json(['dark_mode' => (bool) $user->dark_mode]);
             }
         }
 
@@ -53,7 +77,7 @@ class ProfileController extends Controller
         return response()->json(['dark_mode' => !$current]);
     }
 
-    
+
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [

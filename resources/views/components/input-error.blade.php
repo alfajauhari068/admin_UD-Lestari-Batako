@@ -1,9 +1,15 @@
+{{-- Input Error Component
+     Consistent error message styling with dark mode support
+     Usage: @error('email')
+           <x-input-error :messages="$message" />
+           @enderror
+--}}
 @props(['messages'])
 
 @if ($messages)
-    <ul {{ $attributes->merge(['class' => 'text-sm text-red-600 space-y-1']) }}>
-        @foreach ((array) $messages as $message)
-            <li>{{ $message }}</li>
-        @endforeach
-    </ul>
+    @foreach ((array) $messages as $message)
+        <div {{ $attributes->merge(['class' => 'invalid-feedback d-block']) }}>
+            {{ $message }}
+        </div>
+    @endforeach
 @endif

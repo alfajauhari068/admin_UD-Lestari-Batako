@@ -1,3 +1,7 @@
+{{-- Loading Component
+     Consistent loading indicator with dark mode support
+     Usage: <x-loading id="table-loading" />
+--}}
 @props(['id' => 'table-loading'])
 
 <div id="{{ $id }}" class="table-loading-overlay" style="display:none;">

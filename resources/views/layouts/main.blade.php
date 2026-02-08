@@ -1,5 +1,10 @@
+{{-- Deprecated Layout
+     This file is deprecated. Use layouts.app directly.
+     Redirecting to layouts.app behavior...
+--}}
 @extends('layouts.app')
 
 @section('content')
-	{{-- Deprecated: use layouts.app directly --}}
+    {{-- @deprecated This layout is no longer maintained --}}
+    {{ $slot }}
 @endsection

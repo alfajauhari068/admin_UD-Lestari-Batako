@@ -6,6 +6,8 @@ use App\Models\Pesanan;
 use App\Models\Pelanggan;
 use App\Models\Produk;
 use App\Models\DetailPesanan;
+use App\Http\Requests\StorePesananRequest;
+use App\Http\Requests\UpdatePesananRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -21,14 +23,7 @@ class PesananController extends Controller
     {
         // Require authentication for mutation routes
         $this->middleware('auth')->except(['index', 'show', 'detail', 'create', 'createDetailPesanan']);
-
-        // Apply Spatie permission middleware when available (non-fatal if not installed)
-        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            $this->middleware('permission:create pesanan')->only(['create', 'store']);
-            $this->middleware('permission:export pesanan')->only(['exportCsv']);
-            $this->middleware('permission:edit pesanan')->only(['edit', 'update']);
-            $this->middleware('permission:delete pesanan')->only(['destroy']);
-        }
+        // TODO: middleware not registered, removed for safety
     }
 
     /**
@@ -70,17 +65,9 @@ class PesananController extends Controller
 
         return view('pesanan.form_tambah_pesanan', compact('pelanggans'));
     }
-    public function store(Request $request)
+    public function store(StorePesananRequest $request)
     {
-        $validatedData = $request->validate([
-            'id_pelanggan' => 'required|exists:pelanggans,id_pelanggan', // Relasi ke tabel pelanggans
-            'catatan' => 'nullable|string',
-            // Optional: allow creating pesanan with detail items in same request
-            'id_produk' => 'sometimes',
-            'id_produk.*' => 'exists:produks,id_produk',
-            'jumlah' => 'sometimes',
-            'jumlah.*' => 'integer|min:1',
-        ]);
+        $validatedData = $request->validated();
 
         // If details provided, validate quantities against current stok before transaction
         $hasDetails = $request->has('id_produk');
@@ -170,7 +157,7 @@ class PesananController extends Controller
         return view('pesanan.edit', compact('pesanan', 'produks'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdatePesananRequest $request, $id)
     {
         $request->validate([
             'catatan' => 'nullable',

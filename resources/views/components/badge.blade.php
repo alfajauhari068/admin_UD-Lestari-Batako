@@ -1,14 +1,30 @@
-@props(['type' => 'default', 'label'])
+{{-- Badge Component
+     Consistent badge styling with dark mode support
+     Usage:
+     <x-badge type="success">Active</x-badge>
+     <x-badge type="danger" :pill="true">9+</x-badge>
+--}}
+@props([
+    'type' => 'secondary',
+    'pill' => false
+])
 
 @php
-    $map = [
-        'success' => 'bg-success text-white',
+    $typeClasses = [
+        'success' => 'bg-success',
         'warning' => 'bg-warning text-dark',
-        'danger' => 'bg-danger text-white',
+        'danger' => 'bg-danger',
         'info' => 'bg-info text-dark',
-        'default' => 'bg-secondary text-white'
+        'primary' => 'bg-primary',
+        'secondary' => 'bg-secondary',
+        'dark' => 'bg-dark',
+        'light' => 'bg-light text-dark',
     ];
-    $class = $map[$type] ?? $map['default'];
+
+    $badgeClass = $typeClasses[$type] ?? $typeClasses['secondary'];
+    $pillClass = $pill ? 'rounded-pill' : '';
 @endphp
 
-<span class="badge {{ $class }}">{{ $label }}</span>
+<span class="badge {{ $badgeClass }} {{ $pillClass }}">
+    {{ $slot }}
+</span>

@@ -601,3 +601,17 @@ tbody tr:hover {
     position: relative;
     z-index: 20 !important;
 }
+  
+/* Button group action safety - ensures btn-group buttons are clickable */  
+.table .btn-group,  
+.table .btn-group .btn,  
+.table .btn-group a,  
+.table .btn-group button {  
+    pointer-events: auto !important;  
+    position: relative;  
+    z-index: 15 !important;  
+}  
+.table .text-center,  
+.table .text-center  {  
+    position: relative;  
+} 
