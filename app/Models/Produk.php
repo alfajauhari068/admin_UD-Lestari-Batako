@@ -18,8 +18,15 @@ class Produk extends Model
         'nama_produk',
         'gambar_produk',
         'harga_satuan',
+        'upah_per_unit',
         'stok_tersedia',
-        'deskripsi_produk', // Tambahkan kolom ini
+        'deskripsi_produk',
+    ];
+
+    protected $casts = [
+        'harga_satuan' => 'decimal:2',
+        'upah_per_unit' => 'decimal:2',
+        'stok_tersedia' => 'integer',
     ];
 
     public function detailPesanan()
@@ -56,6 +63,36 @@ class Produk extends Model
             }
 
             $produk->stok_tersedia = $produk->stok_tersedia - $jumlah;
+            $produk->save();
+
+            return $produk;
+        });
+    }
+
+    /**
+     * Increase product stock safely.
+     *
+     * Uses a DB transaction and row lock to avoid race conditions.
+     *
+     * @param int $jumlah
+     * @return $this
+     * @throws \Exception
+     */
+    public function increaseStock(int $jumlah)
+    {
+        if ($jumlah <= 0) {
+            return $this;
+        }
+
+        return DB::transaction(function () use ($jumlah) {
+            // Lock the row for update to avoid concurrent modifications
+            $produk = self::where('id_produk', $this->id_produk)->lockForUpdate()->first();
+
+            if (!$produk) {
+                throw new \Exception('Produk tidak ditemukan');
+            }
+
+            $produk->stok_tersedia = $produk->stok_tersedia + $jumlah;
             $produk->save();
 
             return $produk;

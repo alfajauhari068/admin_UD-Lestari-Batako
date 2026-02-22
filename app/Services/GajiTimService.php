@@ -14,9 +14,9 @@ use Exception;
  * 
  * ALUR:
  * A. total_unit_tim = SUM(jumlah_unit dari semua anggota tim)
- * B. total_upah_tim = (total_unit_tim / produksis.jumlah_per_unit) * produksis.gaji_per_unit
+ * B. total_upah_tim = total_unit_tim * produksis.upah_per_unit
  * C. jumlah_anggota = COUNT(DISTINCT id_karyawan)
- * D. upah_per_karyawan = total_upah_tim / jumlah_anggota
+ * D. upah_per_karyawan = total_upah_tim / jumlah_anggota (jika perlu distribusi rata)
  */
 class GajiTimService
 {
@@ -44,12 +44,8 @@ class GajiTimService
     }
 
     // Guard Clause: Cek validasi kolom penting
-    if ($produksi->jumlah_per_unit <= 0) {
-      throw new Exception("jumlah_per_unit harus > 0");
-    }
-
-    if ($produksi->gaji_per_unit === null) {
-      throw new Exception("gaji_per_unit tidak boleh kosong");
+    if ($produksi->upah_per_unit === null) {
+      throw new Exception("upah_per_unit tidak boleh kosong");
     }
 
     // Query data produksi karyawan tim
@@ -83,16 +79,11 @@ class GajiTimService
       throw new Exception("Anggota tim tidak boleh kosong");
     }
 
-    // B. Bagikan total unit ke setiap anggota (per-member unit)
-    // Contoh: total_unit_tim = 500, jumlah_anggota = 2 -> per_member_unit = 250
-    $per_member_unit = $total_unit_tim / $jumlah_anggota;
+    // B. Hitung total upah tim: total_unit_tim * upah_per_unit
+    $total_upah_tim = $total_unit_tim * $produksi->upah_per_unit;
 
-    // Hitung upah per karyawan berdasarkan per-member unit:
-    // upah_per_karyawan = (per_member_unit / jumlah_per_unit) * gaji_per_unit
-    $upah_per_karyawan = (int) round(($per_member_unit / $produksi->jumlah_per_unit) * $produksi->gaji_per_unit);
-
-    // Total upah tim dihitung dari penjumlahan upah per karyawan
-    $total_upah_tim = $upah_per_karyawan * $jumlah_anggota;
+    // Hitung upah per karyawan (distribusi rata ke semua anggota)
+    $upah_per_karyawan = $jumlah_anggota > 0 ? (int) round($total_upah_tim / $jumlah_anggota) : 0;
 
     return [
       'total_unit_tim' => $total_unit_tim,

@@ -108,4 +108,13 @@ class KaryawanProduksiController extends Controller
         // Redirect ke halaman dashboard dengan pesan sukses
         return redirect()->route('karyawan_produksi.index')->with('success', 'Data produksi karyawan berhasil dihapus!');
     }
+
+    public function show($id_karyawan_produksi)
+    {
+        // Ambil data produksi karyawan tim berdasarkan ID dengan relasi
+        $produksiKaryawan = ProduksiKaryawanTim::with(['karyawan', 'produksi.produk'])->findOrFail($id_karyawan_produksi);
+
+        // Kirim data ke view
+        return view('karyawan_produksi.detail_karyawan_produksi', compact('produksiKaryawan'));
+    }
 }

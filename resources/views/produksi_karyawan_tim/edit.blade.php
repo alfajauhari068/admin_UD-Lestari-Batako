@@ -3,9 +3,9 @@
 @section('content')
 <div class="container py-5">
     <div class="mt-4">
-        @component('components.breadcrumb')
+            @component('components.breadcrumb')
             @slot('breadcrumbs', [
-                ['name' => 'Produksi Karyawan Tim', 'url' => route('tim_produksi.index')],
+                ['name' => 'Produksi Karyawan Tim', 'url' => route('produksi_karyawan_tim.index')],
                 ['name' => 'Edit Anggota', 'url' => '#']
             ])
         @endcomponent
@@ -14,7 +14,7 @@
     <h2 class="mb-4">Edit Anggota Tim</h2>
 
     <div class="card shadow-sm p-4 mb-4">
-        <form action="{{ route('tim_produksi.member.update', ['id' => $produksiKaryawanTim->id]) }}" method="POST">
+        <form action="{{ route('produksi_karyawan_tim.update', ['produksi_karyawan_tim' => $produksiKaryawanTim->id]) }}" method="POST">
             @csrf
             @method('PUT')
 

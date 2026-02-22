@@ -1,94 +1,104 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar Produksi')
+@section('title', 'Master Ongkos Produksi')
 
 @section('content')
-<div class="container-fluid py-4">
-
-    @component('components.page-header', [
-        'title' => 'Daftar Produksi',
-        'subtitle' => 'Manajemen produksi UD. Lestari Batako',
-        'breadcrumbs' => [
-            ['label' => 'Produksi', 'url' => route('produksi.index')]
-        ],
-        'actions' => '
-            <a href="'.route('produksi.create').'" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-circle me-1"></i>Baru
-            </a>
-        '
-    ])
-    @endcomponent
-
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-0">Master Ongkos Produksi</h4>
+            <p class="text-muted mb-0">Kelola tarif upah per unit untuk setiap produk</p>
         </div>
+        <a href="{{ route('produksi.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Tambah Ongkos
+        </a>
+    </div>
+
+    <!-- Alert Messages -->
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     @endif
 
-    @component('components.card')
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th class="text-center">No</th>
-                        <th>Produk</th>
-                        <th>Tanggal</th>
-                        <th>Jumlah</th>
-                        <th>Status</th>
-                        <th class="text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($produksis as $produksi)
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
+    <!-- Table Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
                         <tr>
-                            <td class="text-center">{{ $loop->iteration }}</td>
-                            <td class="fw-semibold">{{ $produksi->produk->nama_produk ?? '-' }}</td>
-                            <td>{{ $produksi->tanggal_produksi?->format('d M Y') ?? '-' }}</td>
-                            <td>{{ number_format($produksi->jumlah) }} unit</td>
+                            <th class="px-4">Produk</th>
+                            <th>Upah per Unit</th>
+                            <th>Satuan</th>
+                            <th>Keterangan</th>
+                            <th class="text-end px-4">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($produksis as $produksi)
+                        <tr>
+                            <td class="px-4">
+                                <strong>{{ $produksi->produk->nama_produk ?? 'Tanpa Produk' }}</strong>
+                            </td>
                             <td>
-                                <span class="badge {{ $produksi->status === 'selesai' ? 'bg-success' : ($produksi->status === 'dibatalkan' ? 'bg-danger' : 'bg-warning text-dark') }}">
-                                    {{ ucfirst($produksi->status) }}
+                                <span class="badge bg-success fs-6">
+                                    Rp {{ number_format($produksi->upah_per_unit, 0, ',', '.') }}
                                 </span>
                             </td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('produksi.show', $produksi->id_produksi) }}"
-                                       class="btn btn-outline-primary"
-                                       data-bs-toggle="tooltip" title="Lihat">
+                            <td>{{ $produksi->satuan }}</td>
+                            <td>{{ $produksi->keterangan ?? '-' }}</td>
+                            <td class="text-end px-4">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ route('produksi.show', $produksi->id_produksi) }}" 
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Lihat Detail">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{{ route('produksi.edit', $produksi->id_produksi) }}"
-                                       class="btn btn-outline-warning"
-                                       data-bs-toggle="tooltip" title="Edit">
+                                    <a href="{{ route('produksi.edit', $produksi->id_produksi) }}" 
+                                       class="btn btn-sm btn-outline-warning"
+                                       title="Edit">
                                         <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form action="{{ route('produksi.destroy', $produksi->id_produksi) }}" 
+                                          method="POST" 
+                                          class="d-inline"
+                                          onsubmit="return confirm('Yakin hapus ongkos ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-cash-stack fs-1 d-block mb-2"></i>
+                                    <p class="mb-0">Belum ada master ongkos</p>
+                                    <a href="{{ route('produksi.create') }}" class="btn btn-primary btn-sm mt-2">
+                                        Tambah Ongkos Pertama
                                     </a>
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center py-5">
-                                @component('components.empty-state', [
-                                    'icon' => 'gear-wide-connected',
-                                    'title' => 'Belum ada produksi',
-                                    'actionLabel' => 'Buat Produksi',
-                                    'actionRoute' => route('produksi.create')
-                                ])
-                                @endcomponent
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        @if(isset($produksis) && method_exists($produksis, 'links'))
-            <div class="mt-3 d-flex justify-content-end">
-                {{ $produksis->withQueryString()->links() }}
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        @endif
-    @endcomponent
-
+        </div>
+    </div>
 </div>
 @endsection

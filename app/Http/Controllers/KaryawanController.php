@@ -11,18 +11,17 @@ class KaryawanController extends Controller
     public function index()
     {
         $karyawans = Karyawan::all();
-        return view('karyawans.dashboard_kariawan', compact('karyawans'));
+        return view('karyawans.index', compact('karyawans'));
     }
 
     public function __construct()
     {
         $this->middleware('auth')->except(['index', 'create', 'show']);
-        // TODO: middleware not registered, removed for safety
     }
 
     public function create()
     {
-        return view('karyawans.create_kariawan');
+        return view('karyawans.create');
     }
 
     public function store(Request $request)
@@ -32,7 +31,6 @@ class KaryawanController extends Controller
             'jabatan' => 'required|string|max:255',
             'no_hp' => 'required|string|max:15',
             'alamat' => 'required|string|max:500',
-
         ]);
 
         Karyawan::create($validatedData);
@@ -40,10 +38,16 @@ class KaryawanController extends Controller
         return redirect()->route('karyawans.index')->with('success', 'Karyawan berhasil ditambahkan.');
     }
 
+    public function show($id)
+    {
+        $karyawan = Karyawan::findOrFail($id);
+        return view('karyawans.show', compact('karyawan'));
+    }
+
     public function edit($id)
     {
         $karyawan = Karyawan::findOrFail($id);
-        return view('karyawans.Edit_kariawan', compact('karyawan'));
+        return view('karyawans.edit', compact('karyawan'));
     }
 
     public function update(Request $request, $id)
@@ -52,7 +56,7 @@ class KaryawanController extends Controller
 
         $validatedData = $request->validate([
             'nama' => 'required|string|max:255',
-            'jabatan' => 'required|string|max:255', // Pastikan kolom ini ada di tabel
+            'jabatan' => 'required|string|max:255',
             'no_hp' => 'required|string|max:15',
             'alamat' => 'required|string|max:500',
         ]);

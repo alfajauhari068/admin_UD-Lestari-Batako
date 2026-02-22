@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Models\ProduksiKaryawanTim;
 use App\Models\TimProduksi;
 use App\Models\Produk;
 use App\Models\Karyawan;
@@ -16,28 +15,31 @@ class Produksi extends Model
 {
     use HasFactory;
 
-    protected $table = 'produksis'; // Nama tabel di database
-    protected $primaryKey = 'id_produksi'; // Primary key tabel
-    protected $fillable = ['id_produk', 'jumlah_per_unit', 'kriteria_gaji', 'gaji_per_unit']; // Kolom yang dapat diisi
+    protected $table = 'produksis';
+    protected $primaryKey = 'id_produksi';
+
+    /**
+     * FINAL STRUCTURE - Master Ongkos:
+     * - id_produk (FK to produk)
+     * - upah_per_unit (wage per unit)
+     * - satuan (unit of measurement)
+     * - keterangan (notes)
+     */
+    protected $fillable = [
+        'id_produk',
+        'upah_per_unit',
+        'satuan',
+        'keterangan',
+    ];
 
     protected $casts = [
         'id_produk' => 'integer',
-        'jumlah_per_unit' => 'integer',
-        'gaji_per_unit' => 'integer',
+        'upah_per_unit' => 'decimal:2',
     ];
 
     /**
-     * Relasi ke ProduksiKaryawanTim
-     * Satu produksi dapat memiliki banyak anggota tim
-     */
-    public function produksiKaryawanTim(): HasMany
-    {
-        return $this->hasMany(ProduksiKaryawanTim::class, 'id_produksi', 'id_produksi');
-    }
-
-    /**
-     * Relasi ke TimProduksi (UNIFIED)
-     * Satu produksi dapat memiliki banyak tim (per-tanggal, per-karyawan)
+     * Relasi ke TimProduksi (Transaksi Harian)
+     * Satu master ongkos produksi dapat memiliki banyak transaksi
      */
     public function timProduksi(): HasMany
     {
@@ -45,8 +47,17 @@ class Produksi extends Model
     }
 
     /**
+     * Relasi ke master Produk
+     * Setiap ongkos produksi pasti связано с produk
+     */
+    public function produk(): BelongsTo
+    {
+        return $this->belongsTo(Produk::class, 'id_produk', 'id_produk');
+    }
+
+    /**
      * Relasi M:N ke Karyawan via TimProduksi
-     * Query semua karyawan yang bekerja pada produksi ini
+     * Semua karyawan yang pernah bekerja dengan produksi ini
      */
     public function karyawan(): BelongsToMany
     {
@@ -56,93 +67,28 @@ class Produksi extends Model
             'id_produksi',
             'id_karyawan'
         )
-            ->using(TimProduksi::class)
-            ->withPivot('jumlah_produksi', 'tanggal_produksi')
+            ->withPivot('jumlah_produksi', 'tanggal_produksi', 'upah_per_unit', 'total_upah')
             ->withTimestamps();
     }
 
-    /**
-     * Relasi ke master Produk. Produksi sekarang mengacu ke Produk.
-     */
-    public function produk(): BelongsTo
-    {
-        return $this->belongsTo(Produk::class, 'id_produk', 'id_produk');
-    }
-
     // ============================================================
-    // REPORTING METHODS - READ-ONLY CALCULATIONS
-    // Convenience methods untuk mengakses agregasi tim_produksi
+    // ACCESSORS & FORMATTING
     // ============================================================
 
     /**
-     * Total produksi untuk produksi ini (all time)
-     * 
-     * @return int
+     * Format upah_per_unit untuk display
      */
-    public function getTotalProduksi()
+    public function getUpahFormattedAttribute(): string
     {
-        return $this->timProduksi()->sum('jumlah_produksi');
+        return 'Rp ' . number_format($this->upah_per_unit, 0, ',', '.');
     }
 
     /**
-     * Total produksi per hari untuk produksi ini
-     * 
-     * @return \Illuminate\Support\Collection
+     * Display teks untuk dropdown
      */
-    public function getProduksiPerHari()
+    public function getDisplayTextAttribute(): string
     {
-        return $this->timProduksi()
-            ->selectRaw('tanggal_produksi, SUM(jumlah_produksi) as total, COUNT(id_karyawan) as jumlah_karyawan')
-            ->groupBy('tanggal_produksi')
-            ->orderBy('tanggal_produksi', 'desc')
-            ->get();
-    }
-
-    /**
-     * Breakdown detail tim: per karyawan, total kontribusi
-     * 
-     * @return \Illuminate\Support\Collection
-     */
-    public function getBreakdownTimPerKaryawan()
-    {
-        return $this->timProduksi()
-            ->selectRaw('id_karyawan, SUM(jumlah_produksi) as total_produksi, COUNT(tanggal_produksi) as hari_bekerja, AVG(jumlah_produksi) as rata_rata')
-            ->groupBy('id_karyawan')
-            ->orderBy('total_produksi', 'desc')
-            ->with('karyawan:id_karyawan,nama_karyawan')
-            ->get();
-    }
-
-    /**
-     * Statistik lengkap tim untuk produksi ini
-     * 
-     * @return array
-     */
-    public function getStatistikTimProduksi()
-    {
-        $tim = $this->timProduksi()->get();
-
-        return [
-            'total_produksi' => $tim->sum('jumlah_produksi'),
-            'jumlah_karyawan' => $tim->groupBy('id_karyawan')->count(),
-            'hari_produksi' => $tim->groupBy('tanggal_produksi')->count(),
-            'rata_rata_per_hari' => $tim->groupBy('tanggal_produksi')->map(fn($g) => $g->sum('jumlah_produksi'))->avg(),
-        ];
-    }
-
-    /**
-     * Top performers untuk produksi ini (top 5 karyawan by kontribusi)
-     * 
-     * @return \Illuminate\Support\Collection
-     */
-    public function getTopKaryawan($limit = 5)
-    {
-        return $this->timProduksi()
-            ->selectRaw('id_karyawan, SUM(jumlah_produksi) as total_produksi, COUNT(tanggal_produksi) as hari_bekerja')
-            ->groupBy('id_karyawan')
-            ->orderBy('total_produksi', 'desc')
-            ->limit($limit)
-            ->with('karyawan:id_karyawan,nama_karyawan')
-            ->get();
+        $produkName = $this->produk ? $this->produk->nama_produk : 'Tanpa Produk';
+        return "{$produkName} - {$this->upahFormatted} / {$this->satuan}";
     }
 }

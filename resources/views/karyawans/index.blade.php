@@ -12,8 +12,8 @@
             ['label' => 'Karyawan', 'url' => route('karyawans.index')]
         ],
         'actions' => '
-            <a href="'.route('karyawans.create').'" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-circle me-1"></i>Tambah
+            <a href="'.route('karyawans.create').'" class="btn btn-primary btn-sm" title="Tambah Karyawan Baru">
+                <i class="bi bi-plus-circle me-1"></i>Tambah Karyawan
             </a>
         '
     ])
@@ -35,22 +35,18 @@
                         <th>Nama</th>
                         <th>Jabatan</th>
                         <th>No HP</th>
-                        <th>Status</th>
+                        <th>Alamat</th>
                         <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($data as $karyawan)
+                    @forelse($karyawans as $karyawan)
                         <tr>
                             <td class="text-center">{{ $loop->iteration }}</td>
                             <td class="fw-semibold">{{ $karyawan->nama }}</td>
                             <td>{{ $karyawan->jabatan }}</td>
                             <td>{{ $karyawan->no_hp ?? '-' }}</td>
-                            <td>
-                                <span class="badge {{ $karyawan->status === 'aktif' ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ ucfirst($karyawan->status) }}
-                                </span>
-                            </td>
+                            <td>{{ $karyawan->alamat ?? '-' }}</td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ route('karyawans.show', $karyawan->id_karyawan) }}"
@@ -63,31 +59,35 @@
                                        data-bs-toggle="tooltip" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+                                    <form action="{{ route('karyawans.destroy', $karyawan->id_karyawan) }}" 
+                                          method="POST" 
+                                          class="d-inline"
+                                          onsubmit="return confirm('Yakin hapus karyawan ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger" title="Hapus">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-5">
-                                @component('components.empty-state', [
-                                    'icon' => 'person-badge',
-                                    'title' => 'Belum ada karyawan',
-                                    'actionLabel' => 'Tambah Karyawan',
-                                    'actionRoute' => route('karyawans.create')
-                                ])
-                                @endcomponent
+                            <td colspan="5" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-person-badge fs-1 d-block mb-2"></i>
+                                    <p class="mb-0">Belum ada karyawan</p>
+                                    <a href="{{ route('karyawans.create') }}" class="btn btn-primary btn-sm mt-2">
+                                        Tambah Karyawan
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-
-        @if(isset($data) && method_exists($data, 'links'))
-            <div class="mt-3 d-flex justify-content-end">
-                {{ $data->withQueryString()->links() }}
-            </div>
-        @endif
     @endcomponent
 
 </div>

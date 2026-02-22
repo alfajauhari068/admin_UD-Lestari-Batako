@@ -21,6 +21,11 @@ class DetailPesanan extends Model
         'total_bayar',
     ];
 
+    protected $casts = [
+        'jumlah' => 'integer',
+        'total_bayar' => 'decimal:2',
+    ];
+
     public function pesanan()
     {
         return $this->belongsTo(Pesanan::class, 'id_pesanan', 'id_pesanan');
@@ -28,6 +33,31 @@ class DetailPesanan extends Model
 
     public function produk()
     {
-         return $this->belongsTo(Produk::class, 'id_produk', 'id_produk');
+        return $this->belongsTo(Produk::class, 'id_produk', 'id_produk');
+    }
+
+    /**
+     * Calculate total price for this detail item
+     */
+    public function calculateTotal()
+    {
+        return $this->jumlah * $this->produk->harga_satuan;
+    }
+
+    /**
+     * Update total_bayar based on current quantity and product price
+     */
+    public function updateTotal()
+    {
+        $this->total_bayar = $this->calculateTotal();
+        $this->save();
+    }
+
+    /**
+     * Get the unit price at the time of order
+     */
+    public function getUnitPrice()
+    {
+        return $this->produk->harga_satuan;
     }
 }

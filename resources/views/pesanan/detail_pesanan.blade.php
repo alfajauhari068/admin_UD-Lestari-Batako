@@ -24,14 +24,46 @@
             <p><strong>Catatan:</strong> {{ $pesanan->catatan ?? '-' }}</p>
             <p><strong>Status:</strong> 
                 <span class="badge 
-                    @if($pesanan->status == 'Selesai') bg-success 
-                    @elseif($pesanan->status == 'Dikirim') bg-warning 
-                    @else bg-secondary 
+                    @if($pesanan->status == 'selesai') bg-success 
+                    @elseif($pesanan->status == 'dibatalkan') bg-danger 
+                    @elseif($pesanan->status == 'diproses') bg-primary
+                    @else bg-warning text-dark
                     @endif">
-                    {{ $pesanan->status ?? 'Diproses' }}
+                    {{ ucfirst($pesanan->status) }}
                 </span>
             </p>
-            <p><strong>Total Bayar:</strong> Rp{{ number_format($pesanan->detailPesanan->sum('total_bayar'), 0, ',', '.') }}</p>
+            <p><strong>Total Bayar:</strong> Rp{{ number_format($pesanan->calculateTotal(), 0, ',', '.') }}</p>
+
+            {{-- Action Buttons --}}
+            <div class="mt-3">
+                @if($pesanan->status === 'pending')
+                    <form action="{{ route('pesanan.confirm', $pesanan->id_pesanan) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Konfirmasi pesanan ini? Stok akan berkurang.')">
+                            <i class="bi bi-check-circle me-1"></i>Konfirmasi Pesanan
+                        </button>
+                    </form>
+                    <form action="{{ route('pesanan.cancel', $pesanan->id_pesanan) }}" method="POST" class="d-inline ms-2">
+                        @csrf
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Batalkan pesanan ini?')">
+                            <i class="bi bi-x-circle me-1"></i>Batalkan
+                        </button>
+                    </form>
+                @elseif($pesanan->status === 'diproses')
+                    <form action="{{ route('pesanan.complete', $pesanan->id_pesanan) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Selesaikan pesanan ini?')">
+                            <i class="bi bi-check2-circle me-1"></i>Selesaikan
+                        </button>
+                    </form>
+                    <form action="{{ route('pesanan.cancel', $pesanan->id_pesanan) }}" method="POST" class="d-inline ms-2">
+                        @csrf
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Batalkan pesanan ini? Stok akan dikembalikan.')">
+                            <i class="bi bi-x-circle me-1"></i>Batalkan
+                        </button>
+                    </form>
+                @endif
+            </div>
         </div>
     </div>
 

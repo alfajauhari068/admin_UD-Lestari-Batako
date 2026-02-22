@@ -36,7 +36,7 @@
         </div>
         @if($actions)
             <div class="page-actions d-flex gap-2">
-                {{ $actions }}
+                {!! $actions !!}
             </div>
         @endif
     </div>

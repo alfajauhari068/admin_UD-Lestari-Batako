@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'UD. Lestari Batako') }}</title>
+    <title>{{ setting('company.name', config('app.name', 'UD. Lestari Batako')) }}</title>
 
     {{-- Fonts --}}
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -178,7 +178,7 @@
             {{-- Footer --}}
             @auth
                 <footer class="app-footer">
-                    <span>&copy; {{ date('Y') }} UD. Lestari Batako. All rights reserved.</span>
+                    <span>&copy; {{ date('Y') }} {{ setting('company.name', 'UD. Lestari Batako') }}. All rights reserved.</span>
                 </footer>
             @endauth
         </div>

@@ -8,16 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Model TimProduksi
  * 
- * Tabel UNIFIED untuk tracking:
- * - Keanggotaan tim produksi (relasi M:N antara Produksi dan Karyawan)
- * - Kontribusi per-karyawan (jumlah_produksi)
- * - Tanggal produksi
- * 
- * Use cases:
- * 1. Query anggota tim untuk produksi tertentu
- * 2. Query produksi yang dikerjakan karyawan
- * 3. Aggregate kontribusi untuk perhitungan gaji
- * 4. Track partisipasi tim per tanggal
+ * FINAL STRUCTURE (Transaksi Harian):
+ * - id_produksi (FK ke produksis - master ongkos)
+ * - id_produk (FK ke produk - for quick access)
+ * - id_karyawan (FK ke karyawans)
+ * - tanggal_produksi
+ * - jumlah_produksi
+ * - upah_per_unit (SNAPSHOT dari master ongkos - tidak berubah meski master diubah)
+ * - total_upah (auto-calculated: jumlah × upah_per_unit)
  */
 class TimProduksi extends Model
 {
@@ -27,23 +25,32 @@ class TimProduksi extends Model
   public $incrementing = true;
   public $timestamps = true;
 
+  /**
+   * FINAL FILLABLE - Transaksi Harian:
+   * WAJIB simpan snapshot upah_per_unit agar tidak terpengaruh perubahan master
+   */
   protected $fillable = [
     'id_produksi',
+    'id_produk',
     'id_karyawan',
     'jumlah_produksi',
     'tanggal_produksi',
+    'upah_per_unit',    // SNAPSHOT - tidak berubah meski master diubah
+    'total_upah',       // AUTO-CALCULATED
   ];
 
   protected $casts = [
     'id_produksi' => 'integer',
+    'id_produk' => 'integer',
     'id_karyawan' => 'integer',
     'jumlah_produksi' => 'integer',
     'tanggal_produksi' => 'date',
+    'upah_per_unit' => 'decimal:2',
+    'total_upah' => 'decimal:2',
   ];
 
   /**
-   * Relasi ke Produksi (M:1)
-   * Banyak tim_produksi dapat belong to satu produksi
+   * Relasi ke Produksi (Master Ongkos)
    */
   public function produksi(): BelongsTo
   {
@@ -51,56 +58,93 @@ class TimProduksi extends Model
   }
 
   /**
-   * Relasi ke Karyawan (M:1)
-   * Banyak tim_produksi dapat belong to satu karyawan
+   * Relasi ke Produk (for quick access)
+   */
+  public function produk(): BelongsTo
+  {
+    return $this->belongsTo(Produk::class, 'id_produk', 'id_produk');
+  }
+
+  /**
+   * Relasi ke Karyawan
    */
   public function karyawan(): BelongsTo
   {
     return $this->belongsTo(Karyawan::class, 'id_karyawan', 'id_karyawan');
   }
 
+  // ============================================================
+  // AUTO-CALCULATE TOTAL_UPAH
+  // Called when creating/updating records
+  // ============================================================
+
   /**
-   * Scope untuk query tim produksi pada tanggal tertentu
+   * Boot method to auto-calculate total_upah before saving
    */
+  protected static function boot()
+  {
+    parent::boot();
+
+    static::saving(function ($model) {
+      // Auto-calculate total_upah from snapshot
+      if ($model->jumlah_produksi && $model->upah_per_unit) {
+        $model->total_upah = $model->jumlah_produksi * $model->upah_per_unit;
+      } else {
+        $model->total_upah = 0;
+      }
+    });
+  }
+
+  // ============================================================
+  // SCOPES
+  // ============================================================
+
   public function scopeByTanggal($query, $tanggal)
   {
     return $query->whereDate('tanggal_produksi', $tanggal);
   }
 
-  /**
-   * Scope untuk query tim produksi untuk produksi tertentu
-   */
   public function scopeForProduksi($query, $id_produksi)
   {
     return $query->where('id_produksi', $id_produksi);
   }
 
-  /**
-   * Scope untuk query tim produksi untuk karyawan tertentu
-   */
   public function scopeForKaryawan($query, $id_karyawan)
   {
     return $query->where('id_karyawan', $id_karyawan);
   }
 
-  /**
-   * Scope untuk aggregate kontribusi
-   */
-  public function scopeTotalKontribusi($query)
+  public function scopeForProduk($query, $produk_id)
   {
-    return $query->sum('jumlah_produksi');
+    return $query->where('id_produk', $produk_id);
   }
 
   // ============================================================
-  // REPORTING METHODS - READ-ONLY CALCULATIONS
-  // Tidak menyimpan hasil, hanya melakukan query aggregation
+  // ACCESSORS & HELPERS
   // ============================================================
 
   /**
-   * Total produksi per hari (across all employees)
-   * GROUP BY tanggal_produksi
-   * 
-   * @return \Illuminate\Support\Collection
+   * Format total_upah untuk display
+   */
+  public function getTotalUpahFormattedAttribute(): string
+  {
+    return 'Rp ' . number_format($this->total_upah ?? 0, 0, ',', '.');
+  }
+
+  /**
+   * Format upah_per_unit untuk display
+   */
+  public function getUpahPerUnitFormattedAttribute(): string
+  {
+    return 'Rp ' . number_format($this->upah_per_unit ?? 0, 0, ',', '.');
+  }
+
+  // ============================================================
+  // STATIC AGGREGATE METHODS
+  // ============================================================
+
+  /**
+   * Total produksi per hari
    */
   public static function totalPerHari()
   {
@@ -111,110 +155,40 @@ class TimProduksi extends Model
   }
 
   /**
-   * Total produksi per hari untuk produksi tertentu
-   * GROUP BY tanggal_produksi, id_produksi
-   * 
-   * @param int $id_produksi
-   * @return \Illuminate\Support\Collection
+   * Total upah per hari
    */
-  public static function totalPerHariByProduksi($id_produksi)
+  public static function totalUpahPerHari()
   {
-    return self::selectRaw('tanggal_produksi, id_produksi, SUM(jumlah_produksi) as total_produksi, COUNT(id_karyawan) as jumlah_karyawan')
-      ->where('id_produksi', $id_produksi)
-      ->groupBy('tanggal_produksi', 'id_produksi')
+    return self::selectRaw('tanggal_produksi, SUM(total_upah) as total_upah')
+      ->groupBy('tanggal_produksi')
       ->orderBy('tanggal_produksi', 'desc')
       ->get();
   }
 
   /**
-   * Total produksi per karyawan (all time)
-   * GROUP BY id_karyawan
-   * 
-   * @return \Illuminate\Support\Collection
+   * Total produksi per karyawan
    */
   public static function totalPerKaryawan()
   {
-    return self::selectRaw('id_karyawan, SUM(jumlah_produksi) as total_produksi, COUNT(DISTINCT tanggal_produksi) as hari_bekerja')
+    return self::selectRaw('id_karyawan, SUM(jumlah_produksi) as total_produksi, SUM(total_upah) as total_upah, COUNT(DISTINCT tanggal_produksi) as hari_bekerja')
       ->groupBy('id_karyawan')
-      ->orderBy('total_produksi', 'desc')
+      ->orderBy('total_upah', 'desc')
       ->get();
   }
 
   /**
-   * Total produksi per karyawan per hari
-   * GROUP BY id_karyawan, tanggal_produksi
-   * 
-   * @return \Illuminate\Support\Collection
-   */
-  public static function totalPerKaryawanPerHari()
-  {
-    return self::selectRaw('id_karyawan, tanggal_produksi, SUM(jumlah_produksi) as total_produksi, COUNT(id_produksi) as jumlah_produk')
-      ->groupBy('id_karyawan', 'tanggal_produksi')
-      ->orderBy('tanggal_produksi', 'desc')
-      ->orderBy('id_karyawan')
-      ->get();
-  }
-
-  /**
-   * Total produksi per produksi (all time)
-   * GROUP BY id_produksi
-   * 
-   * @return \Illuminate\Support\Collection
-   */
-  public static function totalPerProduksi()
-  {
-    return self::selectRaw('id_produksi, SUM(jumlah_produksi) as total_produksi, COUNT(DISTINCT id_karyawan) as jumlah_karyawan, COUNT(DISTINCT tanggal_produksi) as hari_produksi')
-      ->groupBy('id_produksi')
-      ->orderBy('total_produksi', 'desc')
-      ->get();
-  }
-
-  /**
-   * Breakdown detail per tanggal dengan karyawan detail
-   * 
-   * @param \DateTime|string $tanggal
-   * @return \Illuminate\Support\Collection
-   */
-  public static function breakdownDetailHarian($tanggal)
-  {
-    return self::with(['karyawan:id_karyawan,nama_karyawan', 'produksi:id_produksi,nama_produk'])
-      ->whereDate('tanggal_produksi', $tanggal)
-      ->orderBy('id_produksi')
-      ->orderBy('id_karyawan')
-      ->get();
-  }
-
-  /**
-   * Average produksi per karyawan per hari
-   * 
-   * @return \Illuminate\Support\Collection
-   */
-  public static function rataRataProduksiPerKaryawan()
-  {
-    return self::selectRaw('id_karyawan, AVG(jumlah_produksi) as rata_rata_produksi, MIN(jumlah_produksi) as min_produksi, MAX(jumlah_produksi) as max_produksi')
-      ->groupBy('id_karyawan')
-      ->orderBy('rata_rata_produksi', 'desc')
-      ->get();
-  }
-
-  /**
-   * Statistik produksi dalam range tanggal
-   * 
-   * @param \DateTime|string $dari_tanggal
-   * @param \DateTime|string $sampai_tanggal
-   * @return \Illuminate\Support\Collection
+   * Statistik range tanggal
    */
   public static function statistikRange($dari_tanggal, $sampai_tanggal)
   {
     return self::selectRaw('
-            tanggal_produksi,
-            COUNT(DISTINCT id_karyawan) as jumlah_karyawan,
-            COUNT(DISTINCT id_produksi) as jumlah_produk,
-            SUM(jumlah_produksi) as total_produksi,
-            AVG(jumlah_produksi) as rata_rata,
-            MIN(jumlah_produksi) as min,
-            MAX(jumlah_produksi) as max
-        ')
+        tanggal_produksi,
+        COUNT(DISTINCT id_karyawan) as jumlah_karyawan,
+        COUNT(DISTINCT id_produksi) as jumlah_produk,
+        SUM(jumlah_produksi) as total_produksi,
+        SUM(total_upah) as total_upah,
+        AVG(jumlah_produksi) as rata_rata
+      ')
       ->whereBetween('tanggal_produksi', [$dari_tanggal, $sampai_tanggal])
       ->groupBy('tanggal_produksi')
       ->orderBy('tanggal_produksi', 'desc')

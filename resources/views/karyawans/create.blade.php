@@ -28,7 +28,7 @@
                         'type' => 'text',
                         'required' => true,
                         'placeholder' => 'Masukkan nama'
-                    ])
+                    ]) 
                 </div>
                 <div class="col-md-6">
                     @include('components.form-group', [

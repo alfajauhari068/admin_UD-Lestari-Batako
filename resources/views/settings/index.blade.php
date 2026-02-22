@@ -109,4 +109,26 @@
         }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle active tab based on session data or validation errors
+        @if(session('active_tab'))
+            const activeTab = document.querySelector('#{{ session('active_tab') }}-tab');
+            if (activeTab) {
+                activeTab.click();
+            }
+        @elseif($errors->any())
+            // If there are validation errors, find which tab they belong to
+            const errorKeys = @json(array_keys($errors->getMessages()));
+            if (errorKeys.some(key => key.startsWith('company_'))) {
+                document.querySelector('#company-tab').click();
+            } else if (errorKeys.some(key => key.startsWith('ui_') || ['dark_mode', 'compact_mode', 'sidebar_position', 'table_density', 'date_format', 'currency_format'].some(field => errorKeys.includes(field)))) {
+                document.querySelector('#ui-tab').click();
+            } else {
+                document.querySelector('#system-tab').click();
+            }
+        @endif
+    });
+</script>
 @endsection

@@ -59,11 +59,12 @@ class PesananController extends Controller
 
     public function create()
     {
-
-        $pelanggans = Pelanggan::all(); // Pastikan model Pelanggan sudah benar
-
-
-        return view('pesanan.form_tambah_pesanan', compact('pelanggans'));
+        try {
+            $pelanggans = Pelanggan::all()->pluck('nama', 'id_pelanggan')->toArray();
+        } catch (\Exception $e) {
+            $pelanggans = [];
+        }
+        return view('pesanan.create', ['pelanggans' => $pelanggans]);
     }
     public function store(StorePesananRequest $request)
     {
@@ -105,7 +106,10 @@ class PesananController extends Controller
             DB::transaction(function () use ($request, $validatedData, $hasDetails) {
                 $pesanan = Pesanan::create([
                     'id_pelanggan' => $validatedData['id_pelanggan'],
+                    'tanggal_pesanan' => $validatedData['tanggal_pesanan'] ?? now()->toDateString(),
                     'catatan' => $validatedData['catatan'] ?? null,
+                    'status' => 'pending', // Start as pending
+                    'total_harga' => 0, // Will be calculated after details are added
                 ]);
 
                 if ($hasDetails) {
@@ -122,9 +126,6 @@ class PesananController extends Controller
                             throw new \Exception('Produk tidak ditemukan: ' . $id_produk);
                         }
 
-                        // reduceStock will throw if insufficient
-                        $produk->reduceStock($jumlah);
-
                         DetailPesanan::create([
                             'id_pesanan' => $pesanan->id_pesanan,
                             'id_produk' => $id_produk,
@@ -132,6 +133,9 @@ class PesananController extends Controller
                             'total_bayar' => $produk->harga_satuan * $jumlah,
                         ]);
                     }
+
+                    // Calculate and update total after all details are created
+                    $pesanan->updateTotal();
                 }
             });
 
@@ -154,7 +158,13 @@ class PesananController extends Controller
     {
         $pesanan = Pesanan::with('detailPesanan')->findOrFail($id);
         $produks = Produk::all();
-        return view('pesanan.edit', compact('pesanan', 'produks'));
+        // Load pelanggan list for select dropdown in edit form
+        try {
+            $pelanggans = Pelanggan::all()->pluck('nama', 'id_pelanggan')->toArray();
+        } catch (\Exception $e) {
+            $pelanggans = [];
+        }
+        return view('pesanan.edit', ['pesanan' => $pesanan, 'produks' => $produks, 'pelanggans' => $pelanggans]);
     }
 
     public function update(UpdatePesananRequest $request, $id)
@@ -201,8 +211,78 @@ class PesananController extends Controller
     public function destroy($id)
     {
         $pesanan = Pesanan::findOrFail($id);
+
+        // If order is confirmed, restore stock before deleting
+        if ($pesanan->status === 'diproses' || $pesanan->status === 'selesai') {
+            $pesanan->restoreStock();
+        }
+
         $pesanan->delete();
-        return redirect()->route('pesanan.index');
+        return redirect()->route('pesanan.index')->with('success', 'Pesanan berhasil dihapus.');
+    }
+
+    /**
+     * Confirm order - reduce stock and change status to 'diproses'
+     */
+    public function confirm($id)
+    {
+        $pesanan = Pesanan::with('detailPesanan.produk')->findOrFail($id);
+
+        if ($pesanan->status !== 'pending') {
+            return redirect()->back()->with('error', 'Pesanan tidak dapat dikonfirmasi.');
+        }
+
+        try {
+            DB::transaction(function () use ($pesanan) {
+                $pesanan->reduceStock();
+                $pesanan->update(['status' => 'diproses']);
+            });
+
+            return redirect()->back()->with('success', 'Pesanan berhasil dikonfirmasi.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengkonfirmasi pesanan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Cancel order - restore stock and change status to 'dibatalkan'
+     */
+    public function cancel($id)
+    {
+        $pesanan = Pesanan::with('detailPesanan.produk')->findOrFail($id);
+
+        if (!in_array($pesanan->status, ['pending', 'diproses'])) {
+            return redirect()->back()->with('error', 'Pesanan tidak dapat dibatalkan.');
+        }
+
+        try {
+            DB::transaction(function () use ($pesanan) {
+                // Only restore stock if order was already confirmed
+                if ($pesanan->status === 'diproses') {
+                    $pesanan->restoreStock();
+                }
+                $pesanan->update(['status' => 'dibatalkan']);
+            });
+
+            return redirect()->back()->with('success', 'Pesanan berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal membatalkan pesanan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Complete order - change status to 'selesai'
+     */
+    public function complete($id)
+    {
+        $pesanan = Pesanan::findOrFail($id);
+
+        if ($pesanan->status !== 'diproses') {
+            return redirect()->back()->with('error', 'Pesanan tidak dapat diselesaikan.');
+        }
+
+        $pesanan->update(['status' => 'selesai']);
+        return redirect()->back()->with('success', 'Pesanan berhasil diselesaikan.');
     }
 
     public function createDetailPesanan($id_pesanan)

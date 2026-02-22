@@ -105,10 +105,10 @@ class ProduksiKaryawanTimController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('tim_produksi.index')->with('success', 'Anggota tim berhasil ditambahkan untuk produksi tersebut.');
+            return redirect()->route('produksi_karyawan_tim.index')->with('success', 'Anggota tim berhasil ditambahkan untuk produksi tersebut.');
         } catch (Exception $e) {
             DB::rollBack();
-            return redirect()->route('tim_produksi.index')->with('error', 'Gagal menyimpan anggota tim: ' . $e->getMessage());
+            return redirect()->route('produksi_karyawan_tim.index')->with('error', 'Gagal menyimpan anggota tim: ' . $e->getMessage());
         }
     }
 
@@ -136,12 +136,12 @@ class ProduksiKaryawanTimController extends Controller
             $updated = $produksiKaryawanTim->update($validatedData);
 
             if ($updated) {
-                return redirect()->route('tim_produksi.index')->with('success', 'Data produksi karyawan tim berhasil diperbarui!');
+                return redirect()->route('produksi_karyawan_tim.index')->with('success', 'Data produksi karyawan tim berhasil diperbarui!');
             }
 
-            return redirect()->route('tim_produksi.index')->with('error', 'Gagal menyimpan perubahan ke database.');
+            return redirect()->route('produksi_karyawan_tim.index')->with('error', 'Gagal menyimpan perubahan ke database.');
         } catch (Exception $e) {
-            return redirect()->route('tim_produksi.index')->with('error', 'Error: ' . $e->getMessage());
+            return redirect()->route('produksi_karyawan_tim.index')->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
@@ -152,7 +152,7 @@ class ProduksiKaryawanTimController extends Controller
         $produksiKaryawanTim->delete();
 
         // Redirect ke halaman index dengan pesan sukses
-        return redirect()->route('tim_produksi.index')->with('success', 'Data produksi karyawan tim berhasil dihapus!');
+        return redirect()->route('produksi_karyawan_tim.index')->with('success', 'Data produksi karyawan tim berhasil dihapus!');
     }
 
     public function show($id)
@@ -223,7 +223,7 @@ class ProduksiKaryawanTimController extends Controller
                 'daftar_karyawan'
             ));
         } catch (Exception $e) {
-            return redirect()->route('tim_produksi.index')
+            return redirect()->route('produksi_karyawan_tim.index')
                 ->with('error', 'Error: ' . $e->getMessage());
         }
     }
@@ -286,7 +286,7 @@ class ProduksiKaryawanTimController extends Controller
                 'daftar_karyawan'
             ));
         } catch (Exception $e) {
-            return redirect()->route('tim_produksi.index')
+            return redirect()->route('produksi_karyawan_tim.index')
                 ->with('error', 'Error: ' . $e->getMessage());
         }
     }
@@ -311,7 +311,7 @@ class ProduksiKaryawanTimController extends Controller
 
             return view('produksi_karyawan_tim.edit_group', compact('anggotaTim', 'produksi', 'tanggalCarbon'));
         } catch (Exception $e) {
-            return redirect()->route('tim_produksi.index')
+            return redirect()->route('produksi_karyawan_tim.index')
                 ->with('error', 'Error: ' . $e->getMessage());
         }
     }
@@ -328,9 +328,9 @@ class ProduksiKaryawanTimController extends Controller
                 ->whereDate('tanggal_produksi', $tanggalCarbon)
                 ->delete();
 
-            return redirect()->route('tim_produksi.index')->with('success', 'Semua anggota tim berhasil dihapus untuk produksi tersebut pada tanggal itu.');
+            return redirect()->route('produksi_karyawan_tim.index')->with('success', 'Semua anggota tim berhasil dihapus untuk produksi tersebut pada tanggal itu.');
         } catch (Exception $e) {
-            return redirect()->route('tim_produksi.index')->with('error', 'Error: ' . $e->getMessage());
+            return redirect()->route('produksi_karyawan_tim.index')->with('error', 'Error: ' . $e->getMessage());
         }
     }
 }

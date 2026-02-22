@@ -3,16 +3,16 @@
 @section('content')
 <div class="page-container p-fluid">
     <div class="mt-4">
-        @component('components.breadcrumb')
+                @component('components.breadcrumb')
             @slot('breadcrumbs', [
-                ['name' => 'Produksi Karyawan Tim', 'url' => route('tim_produksi.index')],
-                ['name' => 'Tambah Data', 'url' => route('tim_produksi.index')]
+                ['name' => 'Produksi Karyawan Tim', 'url' => route('produksi_karyawan_tim.index')],
+                ['name' => 'Tambah Data', 'url' => route('produksi_karyawan_tim.index')]
             ])
         @endcomponent
     </div>
     
     <h2 class="mb-5 fw-bold text-primary">Tambah Data Produksi Karyawan Tim</h2>
-    <form action="{{ route('tim_produksi.store') }}" method="POST" class="card custom-card p-5 mx-auto max-w-900">
+    <form action="{{ route('produksi_karyawan_tim.store') }}" method="POST" class="card custom-card p-5 mx-auto max-w-900">
         @csrf
         
         {{-- Pilih Nama Produksi --}}
@@ -76,7 +76,7 @@
 
         {{-- Tombol Simpan dan Batal --}}
         <div class="d-flex justify-content-end gap-2 mt-5 pt-3">
-            <a href="{{ route('tim_produksi.index') }}" class="btn btn-secondary btn-secondary-custom">
+            <a href="{{ route('produksi_karyawan_tim.index') }}" class="btn btn-secondary btn-secondary-custom">
                 <i class="bi bi-arrow-left-circle me-2"></i>Batal
             </a>
             <button type="submit" class="btn btn-primary btn-primary-custom">

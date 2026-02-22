@@ -23,6 +23,7 @@ class StorePesananRequest extends FormRequest
   {
     return [
       'id_pelanggan' => 'required|exists:pelanggans,id_pelanggan',
+      'tanggal_pesanan' => 'required|date|before_or_equal:today',
       'catatan' => 'nullable|string',
       'id_produk' => 'sometimes',
       'id_produk.*' => 'exists:produks,id_produk',

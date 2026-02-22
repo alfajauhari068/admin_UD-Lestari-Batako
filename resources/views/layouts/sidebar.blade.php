@@ -3,8 +3,6 @@
 --}}
 @php
     $currentRoute = request()->route()->getName();
-    $user = auth()->user();
-    $showKaryawan = $user && method_exists($user, 'hasRole') ? $user->hasRole('admin') : true;
 @endphp
 
 {{-- Mobile Toggle Button --}}
@@ -18,7 +16,7 @@
     <div class="sidebar-brand text-center py-4 px-3 border-bottom">
         <a href="{{ route('dashboard') }}" class="sidebar-brand-link d-flex flex-column align-items-center text-decoration-none">
             <img src="{{ asset('assets/Logo-LB.jpg') }}" alt="Logo" class="brand-logo mb-2">
-            <span class="brand-text text-white fw-semibold small">UD. Lestari Batako</span>
+            <span class="brand-text text-white fw-semibold small">{{ setting('company.name', 'UD. Lestari Batako') }}</span>
         </a>
     </div>
 
@@ -55,14 +53,12 @@
                     <span>Pengiriman</span>
                 </a>
             </li>
-            @if($showKaryawan)
             <li class="nav-item">
                 <a href="{{ route('karyawans.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'karyawans.') ? 'active' : '' }}">
                     <i class="bi bi-person-badge me-2"></i>
                     <span>Karyawan</span>
                 </a>
             </li>
-            @endif
             <li class="nav-item">
                 <a href="{{ route('produksi.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'produksi.') ? 'active' : '' }}">
                     <i class="bi bi-gear-wide-connected me-2"></i>
@@ -70,7 +66,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('tim_produksi.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'tim_produksi.') ? 'active' : '' }}">
+                <a href="{{ route('produksi_karyawan_tim.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'produksi_karyawan_tim.') ? 'active' : '' }}">
                     <i class="bi bi-clipboard-data me-2"></i>
                     <span>Tim Produksi</span>
                 </a>

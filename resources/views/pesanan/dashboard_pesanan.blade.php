@@ -71,7 +71,7 @@
                                     {{ ucfirst($pesanan->status) }}
                                 </span>
                             </td>
-                            <td>Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($pesanan->calculateTotal(), 0, ',', '.') }}</td>
                             <td>
                                 <div class="d-flex justify-content-center gap-2">
                                     {{-- Detail --}}

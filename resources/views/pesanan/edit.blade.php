@@ -3,6 +3,11 @@
 @section('title', 'Edit Pesanan')
 
 @section('content')
+<?php
+$pelanggans = $pelanggans ?? [];
+$pesanan = $pesanan ?? null;
+$produks = $produks ?? [];
+?>
 <div class="container-fluid py-4">
 
     {{-- Page Header --}}
@@ -32,7 +37,7 @@
                         'label' => 'Pelanggan',
                         'name' => 'id_pelanggan',
                         'type' => 'select',
-                        'options' => $pelanggan->pluck('nama', 'id_pelanggan')->toArray(),
+                        'options' => $pelanggans,
                         'required' => true,
                         'value' => old('id_pelanggan', $pesanan->id_pelanggan)
                     ])
@@ -55,7 +60,7 @@
                         'name' => 'tanggal_pesanan',
                         'type' => 'date',
                         'required' => true,
-                        'value' => old('tanggal_pesanan', $pesanan->tanggal_pesanan->format('Y-m-d'))
+                        'value' => old('tanggal_pesanan', optional($pesanan->tanggal_pesanan)->format('Y-m-d'))
                     ])
                 </div>
 

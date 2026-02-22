@@ -27,8 +27,8 @@ class DetailPesananController extends Controller
     public function create($id_pesanan)
     {
         $pesanan = Pesanan::findOrFail($id_pesanan);
-        $produks = Produk::all(); // Ambil semua produk untuk dropdown
-        return view('pesanan.create_detail_pesanan', compact('pesanan', 'produks'));
+        $produks = Produk::where('stok_tersedia', '>', 0)->get();
+        return view('pesanan.add_detail_pesanan', compact('pesanan', 'produks'));
     }
 
     public function show($id_detail_pesanan)

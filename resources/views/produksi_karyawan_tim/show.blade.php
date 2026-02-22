@@ -3,9 +3,9 @@
 @section('content')
 <div class="container py-5">
     <div class="mt-4">
-        @component('components.breadcrumb')
+            @component('components.breadcrumb')
             @slot('breadcrumbs', [
-                ['name' => 'Produksi Karyawan Tim', 'url' => route('tim_produksi.index')],
+                ['name' => 'Produksi Karyawan Tim', 'url' => route('produksi_karyawan_tim.index')],
                 ['name' => 'Detail Anggota', 'url' => '#']
             ])
         @endcomponent

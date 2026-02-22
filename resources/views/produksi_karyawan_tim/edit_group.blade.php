@@ -3,9 +3,9 @@
 @section('content')
 <div class="container py-5">
     <div class="mt-4">
-        @component('components.breadcrumb')
+            @component('components.breadcrumb')
             @slot('breadcrumbs', [
-                ['name' => 'Produksi Karyawan Tim', 'url' => route('tim_produksi.index')],
+                ['name' => 'Produksi Karyawan Tim', 'url' => route('produksi_karyawan_tim.index')],
                 ['name' => 'Edit Tim', 'url' => '#']
             ])
         @endcomponent
@@ -33,9 +33,9 @@
                             <td>{{ $anggota->jumlah_unit }}</td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
-                                    <a href="{{ route('tim_produksi.member.edit', ['id' => $anggota->id]) }}" class="btn btn-sm btn-warning">Edit</a>
+                                    <a href="{{ route('produksi_karyawan_tim.edit', ['produksi_karyawan_tim' => $anggota->id]) }}" class="btn btn-sm btn-warning">Edit</a>
 
-                                    <form action="{{ route('tim_produksi.member.destroy', ['id' => $anggota->id]) }}" method="POST" onsubmit="return confirm('Hapus anggota ini?');">
+                                    <form action="{{ route('produksi_karyawan_tim.destroy', ['produksi_karyawan_tim' => $anggota->id]) }}" method="POST" onsubmit="return confirm('Hapus anggota ini?');">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-sm btn-danger">Hapus</button>
@@ -53,7 +53,7 @@
         </div>
 
         <div class="mt-3">
-            <a href="{{ route('tim_produksi.index') }}" class="btn btn-secondary">Kembali</a>
+            <a href="{{ route('produksi_karyawan_tim.index') }}" class="btn btn-secondary">Kembali</a>
         </div>
     </div>
 </div>

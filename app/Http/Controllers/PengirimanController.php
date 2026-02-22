@@ -1,83 +1,176 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Pengiriman;
 use App\Models\Pesanan;
 use Illuminate\Http\Request;
 
 class PengirimanController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index', 'show']);
+    }
+
+    /**
+     * Display a listing of pengiriman
+     */
     public function index()
     {
-
-        $pengirimans = Pengiriman::with('pesanan.pelanggan')->get();
-
+        $pengirimans = Pengiriman::with(['pesanan.pelanggan', 'pesanan.detailPesanan.produk'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('pengiriman.dashboard_pengiriman', compact('pengirimans'));
     }
 
-    public function __construct()
+    /**
+     * Show the form for creating a new pengiriman
+     */
+    public function create()
     {
-        $this->middleware('auth')->except(['index', 'show', 'create']);
+        // Ambil pesanan yang belum memiliki pengiriman atau statusnya bukan 'selesai'
+        $pesanans = Pesanan::with(['pelanggan', 'detailPesanan.produk'])
+            ->whereNotIn('status', ['selesai', 'dibatalkan'])
+            ->get();
+
+        return view('pengiriman.create', compact('pesanans'));
     }
 
-    public function create($id_pesanan)
-    {
-        $pesanan = Pesanan::with('pelanggan')->findOrFail($id_pesanan);
-        return view('pengiriman.create_pengiriman', compact('pesanan'));
-    }
-
+    /**
+     * Store a newly created pengiriman
+     */
     public function store(Request $request)
     {
-
         $validatedData = $request->validate([
             'id_pesanan' => 'required|exists:pesanans,id_pesanan',
-            'id_pelanggan' => 'required|exists:pelanggans,id_pelanggan',
-            'alamat_pengiriman' => 'required|string|max:255',
+            'alamat_pengiriman' => 'required|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'kecamatan' => 'nullable|string|max:100',
+            'kabupaten' => 'nullable|string|max:100',
+            'provinsi' => 'nullable|string|max:100',
             'tanggal_pengiriman' => 'required|date',
-            'jasa_kurir' => 'required|string|max:100',
-            'no_resi' => 'nullable|string|max:50',
+            'jenis_pengiriman' => 'required|in:Internal / Ambil Sendiri,Kurir Lokal,Ekspedisi',
+            'status' => 'required|in:Menunggu Dijadwalkan,Dalam Pengiriman,Terkirim,Dibatalkan',
+            'catatan' => 'nullable|string',
         ]);
 
-        Pengiriman::create($validatedData);
+        // Ambil id_pelanggan dari pesanan
+        $pesanan = Pesanan::findOrFail($validatedData['id_pesanan']);
+        $validatedData['id_pelanggan'] = $pesanan->id_pelanggan;
 
+        // Buat pengiriman
+        $pengiriman = Pengiriman::create($validatedData);
 
-        return redirect()->route('pesanan.index')->with('success', 'Pengiriman berhasil diatur.');
+        // Update status pesanan jika pengiriman terkirim
+        if ($validatedData['status'] === 'Terkirim') {
+            $pesanan->update(['status' => 'selesai']);
+        }
+
+        return redirect()->route('pengiriman.index')
+            ->with('success', 'Pengiriman berhasil dibuat.');
     }
 
-
-    public function edit($id)
-    {
-        $pengiriman = Pengiriman::with('pesanan.pelanggan')->findOrFail($id);
-        return view('pengiriman.edit_pengiriman', compact('pengiriman'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $validatedData = $request->validate([
-            'alamat_pengiriman' => 'required|string|max:255',
-            'tanggal_pengiriman' => 'nullable|date',
-            'jasa_kurir' => 'nullable|string|max:100',
-            'no_resi' => 'nullable|string|max:100',
-        ]);
-
-        $pengiriman = Pengiriman::findOrFail($id);
-        $pengiriman->update($validatedData);
-
-        return redirect()->route('pengiriman.index')->with('success', 'Pengiriman berhasil diperbarui.');
-    }
-
+    /**
+     * Display the specified pengiriman
+     */
     public function show($id_pengiriman)
     {
-        $pengiriman = Pengiriman::with(['pesanan.pelanggan'])->findOrFail($id_pengiriman);
+        $pengiriman = Pengiriman::with(['pesanan.pelanggan', 'pesanan.detailPesanan.produk'])
+            ->findOrFail($id_pengiriman);
+
         return view('pengiriman.detail_pengiriman', compact('pengiriman'));
     }
 
+    /**
+     * Show the form for editing the specified pengiriman
+     */
+    public function edit($id)
+    {
+        $pengiriman = Pengiriman::with(['pesanan.pelanggan', 'pesanan.detailPesanan.produk'])
+            ->findOrFail($id);
+
+        $pesanans = Pesanan::with(['pelanggan', 'detailPesanan.produk'])
+            ->whereNotIn('status', ['dibatalkan'])
+            ->get();
+
+        return view('pengiriman.edit', compact('pengiriman', 'pesanans'));
+    }
+
+    /**
+     * Update the specified pengiriman
+     */
+    public function update(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'alamat_pengiriman' => 'required|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'kecamatan' => 'nullable|string|max:100',
+            'kabupaten' => 'nullable|string|max:100',
+            'provinsi' => 'nullable|string|max:100',
+            'tanggal_pengiriman' => 'required|date',
+            'jenis_pengiriman' => 'required|in:Internal / Ambil Sendiri,Kurir Lokal,Ekspedisi',
+            'status' => 'required|in:Menunggu Dijadwalkan,Dalam Pengiriman,Terkirim,Dibatalkan',
+            'catatan' => 'nullable|string',
+        ]);
+
+        $pengiriman = Pengiriman::findOrFail($id);
+        $oldStatus = $pengiriman->status;
+
+        $pengiriman->update($validatedData);
+
+        // Update status pesanan jika status berubah menjadi Terkirim
+        if ($oldStatus !== 'Terkirim' && $validatedData['status'] === 'Terkirim') {
+            $pengiriman->pesanan->update(['status' => 'selesai']);
+        }
+
+        return redirect()->route('pengiriman.index')
+            ->with('success', 'Pengiriman berhasil diperbarui.');
+    }
+
+    /**
+     * Remove the specified pengiriman
+     */
     public function destroy($id)
     {
         $pengiriman = Pengiriman::findOrFail($id);
         $pengiriman->delete();
 
-        return redirect()->route('pengiriman.index')->with('success', 'Pengiriman berhasil dihapus.');
+        return redirect()->route('pengiriman.index')
+            ->with('success', 'Pengiriman berhasil dihapus.');
+    }
+
+    /**
+     * API endpoint untuk mendapatkan detail pesanan
+     */
+    public function getPesananDetail($id)
+    {
+        $pesanan = Pesanan::with(['pelanggan', 'detailPesanan.produk'])
+            ->findOrFail($id);
+
+        // Format detail produk
+        $produkList = $pesanan->detailPesanan->map(function ($detail) {
+            return [
+                'nama' => $detail->produk->nama ?? 'N/A',
+                'jumlah' => $detail->jumlah,
+                'satuan' => $detail->produk->satuan ?? 'pcs',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'pelanggan' => [
+                    'nama' => $pesanan->pelanggan->nama ?? 'N/A',
+                    'no_hp' => $pesanan->pelanggan->no_hp ?? 'N/A',
+                    'alamat' => $pesanan->pelanggan->alamat ?? 'N/A',
+                ],
+                'produk' => $produkList,
+                'total_bayar' => $pesanan->total_bayar,
+            ]
+        ]);
     }
 }

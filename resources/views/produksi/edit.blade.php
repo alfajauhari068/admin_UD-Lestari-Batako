@@ -1,77 +1,114 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Produksi')
+@section('title', 'Edit Master Ongkos')
 
 @section('content')
-<div class="container-fluid py-4">
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('produksi.index') }}">Master Ongkos</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('produksi.show', $produksi->id_produksi) }}">Detail</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+        </ol>
+    </nav>
 
-    @component('components.page-header', [
-        'title' => 'Edit Produksi',
-        'subtitle' => 'Edit informasi produksi',
-        'breadcrumbs' => [
-            ['label' => 'Produksi', 'url' => route('produksi.index')],
-            ['label' => 'Edit']
-        ]
-    ])
-    @endcomponent
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Edit Master Ongkos</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('produksi.update', $produksi->id_produksi) }}" method="POST">
+                        @csrf
+                        @method('PUT')
 
-    @component('components.card', ['title' => 'Edit Produksi'])
-        <form action="{{ route('produksi.update', $produksi->id_produksi) }}" method="POST">
-            @csrf
-            @method('PUT')
-            @include('components.errors')
+                        <!-- Produk Selection -->
+                        <div class="mb-3">
+                            <label for="id_produk" class="form-label">Produk <span class="text-danger">*</span></label>
+                            <select name="id_produk" id="id_produk" 
+                                    class="form-select @error('id_produk') is-invalid @enderror"
+                                    required>
+                                <option value="">Pilih Produk</option>
+                                @foreach($produks as $produk)
+                                <option value="{{ $produk->id_produk }}" 
+                                        {{ $produksi->id_produk == $produk->id_produk ? 'selected' : '' }}>
+                                    {{ $produk->nama_produk }}
+                                </option>
+                                @endforeach
+                            </select>
+                            @error('id_produk')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text text-warning">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                Perubahan produk akan mempengaruhi referensi data
+                            </div>
+                        </div>
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    @include('components.form-group', [
-                        'label' => 'Produk',
-                        'name' => 'id_produk',
-                        'type' => 'select',
-                        'options' => $produk->pluck('nama_produk', 'id_produk')->toArray(),
-                        'required' => true,
-                        'value' => old('id_produk', $produksi->id_produk)
-                    ])
-                </div>
-                <div class="col-md-6">
-                    @include('components.form-group', [
-                        'label' => 'Tanggal Produksi',
-                        'name' => 'tanggal_produksi',
-                        'type' => 'date',
-                        'required' => true,
-                        'value' => old('tanggal_produksi', $produksi->tanggal_produksi?->format('Y-m-d'))
-                    ])
-                </div>
-                <div class="col-md-6">
-                    @include('components.form-group', [
-                        'label' => 'Jumlah',
-                        'name' => 'jumlah',
-                        'type' => 'number',
-                        'required' => true,
-                        'value' => old('jumlah', $produksi->jumlah)
-                    ])
-                </div>
-                <div class="col-md-6">
-                    @include('components.form-group', [
-                        'label' => 'Status',
-                        'name' => 'status',
-                        'type' => 'select',
-                        'options' => ['berjalan' => 'Berjalan', 'selesai' => 'Selesai', 'dibatalkan' => 'Dibatalkan'],
-                        'required' => true,
-                        'value' => old('status', $produksi->status)
-                    ])
+                        <!-- Upah per Unit -->
+                        <div class="mb-3">
+                            <label for="upah_per_unit" class="form-label">Upah per Unit (Rp) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" name="upah_per_unit" id="upah_per_unit"
+                                       class="form-control @error('upah_per_unit') is-invalid @enderror"
+                                       value="{{ $produksi->upah_per_unit }}"
+                                       min="0" step="100" required>
+                            </div>
+                            @error('upah_per_unit')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text text-warning">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                Perubahan akan berlaku untuk transaksi baru. Transaksi lama tetap menggunakan nilai lama (snapshot).
+                            </div>
+                        </div>
+
+                        <!-- Satuan -->
+                        <div class="mb-3">
+                            <label for="satuan" class="form-label">Satuan <span class="text-danger">*</span></label>
+                            <select name="satuan" id="satuan" 
+                                    class="form-select @error('satuan') is-invalid @enderror"
+                                    required>
+                                <option value="unit" {{ $produksi->satuan == 'unit' ? 'selected' : '' }}>Unit</option>
+                                <option value="pcs" {{ $produksi->satuan == 'pcs' ? 'selected' : '' }}>Pcs</option>
+                                <option value="biji" {{ $produksi->satuan == 'biji' ? 'selected' : '' }}>Biji</option>
+                                <option value="batang" {{ $produksi->satuan == 'batang' ? 'selected' : '' }}>Batang</option>
+                                <option value="zak" {{ $produksi->satuan == 'zak' ? 'selected' : '' }}>Zak</option>
+                                <option value="m3" {{ $produksi->satuan == 'm3' ? 'selected' : '' }}>M³</option>
+                            </select>
+                            @error('satuan')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Keterangan -->
+                        <div class="mb-4">
+                            <label for="keterangan" class="form-label">Keterangan</label>
+                            <textarea name="keterangan" id="keterangan" rows="3"
+                                      class="form-control @error('keterangan') is-invalid @enderror"
+                                      placeholder="Catatan opsional...">{{ $produksi->keterangan }}</textarea>
+                            @error('keterangan')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-check-lg"></i> Update
+                            </button>
+                            <a href="{{ route('produksi.show', $produksi->id_produksi) }}" class="btn btn-outline-secondary">
+                                Batal
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                <a href="{{ route('produksi.index') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left-circle me-1"></i>Batal
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save2 me-1"></i>Update
-                </button>
-            </div>
-        </form>
-    @endcomponent
-
+        </div>
+    </div>
 </div>
 @endsection

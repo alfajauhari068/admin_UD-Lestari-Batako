@@ -4,35 +4,23 @@
 <div class="d-flex">
     <div class="container-fluid p-5 py-5" style="min-height: 100vh; background: #f9f9f9;">
 
-        {{-- Header --}}
-        <section class="dashboard-header mb-3">
-            <h3 class="mb-0">Produksi Karyawan Tim</h3>
-        </section>
-
-        {{-- Breadcrumb --}}
-        <div class="mb-3">
-                @component('components.breadcrumb')
-                        @slot('breadcrumbs', [
-                                ['name' => 'Tim Produksi', 'url' => route('tim_produksi.index')]
-                        ])
-                @endcomponent
-        </div>
-
-
-
-        {{-- Title + Action --}}
-        <div class="row justify-content-between align-items-center mb-4">
-            <div class="col-auto">
-                <h4 class="mb-0">Daftar Kejadian Produksi</h4>
-            </div>
-            <div class="col-auto">
-                <a href="{{ route('produksi.index') }}" class="btn btn-outline-secondary">Lihat Produksi</a>
-            </div>
-        </div>
-
-        <div class="panel-actions">
-                <a href="{{ route('tim_produksi.create') }}" class="btn btn-primary" title="Tambah Anggota Tim">Tambah Anggota Tim</a>
-        </div>
+        {{-- Page Header --}}
+        @component('components.page-header', [
+            'title' => 'Produksi Karyawan Tim',
+            'subtitle' => 'Manajemen produksi karyawan tim UD. Lestari Batako',
+            'breadcrumbs' => [
+                ['label' => 'Tim Produksi', 'url' => route('produksi_karyawan_tim.index')]
+            ],
+            'actions' => '
+                <a href="'.route('produksi.index').'" class="btn btn-outline-secondary btn-sm me-2">
+                    <i class="bi bi-eye me-1"></i>Lihat Produksi
+                </a>
+                <a href="'.route('produksi_karyawan_tim.create').'" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Tambah
+                </a>
+            '
+        ])
+        @endcomponent
 
         {{-- Card --}}
         <div class="card shadow-sm border-0" style="border-radius: 12px;">
@@ -71,15 +59,15 @@
                                     <td class="text-end">Rp{{ number_format($produksiKaryawanTim->total_gaji_tim ?? 0, 0, ',', '.') }}</td>
                                     <td>
                                         <div class="d-flex justify-content-center gap-2">
-                                            <a href="{{ route('tim_produksi.detail', ['id' => $produksiKaryawanTim->id_produksi, 'tanggal' => $produksiKaryawanTim->tanggal_produksi]) }}" class="btn btn-sm btn-info" title="Lihat Detail">
+                                            <a href="{{ route('produksi_karyawan_tim.detail', ['id' => $produksiKaryawanTim->id_produksi, 'tanggal' => $produksiKaryawanTim->tanggal_produksi]) }}" class="btn btn-sm btn-info" title="Lihat Detail">
                                                 <i class="bi bi-eye"></i>
                                             </a>
 
-                                            <a href="{{ route('tim_produksi.edit', ['id' => $produksiKaryawanTim->id_produksi, 'tanggal' => $produksiKaryawanTim->tanggal_produksi]) }}" class="btn btn-sm btn-warning" title="Edit Tim">
+                                            <a href="{{ route('produksi_karyawan_tim.edit_group', ['id' => $produksiKaryawanTim->id_produksi, 'tanggal' => $produksiKaryawanTim->tanggal_produksi]) }}" class="btn btn-sm btn-warning" title="Edit Tim">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
 
-                                            <form action="{{ route('tim_produksi.destroy', ['id' => $produksiKaryawanTim->id_produksi, 'tanggal' => $produksiKaryawanTim->tanggal_produksi]) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus semua anggota tim untuk produksi ini pada tanggal tersebut?');">
+                                            <form action="{{ route('produksi_karyawan_tim.destroy_group', ['id' => $produksiKaryawanTim->id_produksi, 'tanggal' => $produksiKaryawanTim->tanggal_produksi]) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus semua anggota tim untuk produksi ini pada tanggal tersebut?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger" title="Hapus Tim">

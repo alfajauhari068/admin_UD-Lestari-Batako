@@ -12,6 +12,7 @@ use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\ProduksiController;
 use App\Http\Controllers\KaryawanProduksiController;
 use App\Http\Controllers\ProduksiKaryawanTimController;
+use App\Http\Controllers\TimProduksiController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -68,25 +69,11 @@ Route::middleware(['auth'])->group(function () {
     // SETTINGS ROUTES (Admin Only)
     // ─────────────────────────────────────────────────────────────
 
-    Route::get('/settings', function () {
-        return view('settings.index');
-    })->name('settings.index');
+    Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('settings.index');
 
-    // Settings form routes (placeholder routes for UI)
-    Route::patch('/settings/company', function () {
-        // Placeholder - backend logic to be implemented
-        return back()->with('company_success', 'Informasi perusahaan berhasil diperbarui.');
-    })->name('settings.company.update');
-
-    Route::patch('/settings/ui', function () {
-        // Placeholder - backend logic to be implemented
-        return back()->with('ui_success', 'Pengaturan tampilan berhasil diperbarui.');
-    })->name('settings.ui.update');
-
-    Route::patch('/settings/system', function () {
-        // Placeholder - backend logic to be implemented
-        return back()->with('system_success', 'Pengaturan sistem berhasil diperbarui.');
-    })->name('settings.system.update');
+    Route::patch('/settings/company', [App\Http\Controllers\SettingsController::class, 'updateCompany'])->name('settings.company.update');
+    Route::patch('/settings/ui', [App\Http\Controllers\SettingsController::class, 'updateUI'])->name('settings.ui.update');
+    Route::patch('/settings/system', [App\Http\Controllers\SettingsController::class, 'updateSystem'])->name('settings.system.update');
 
     // ─────────────────────────────────────────────────────────────
     // PRODUK ROUTES (RESTful) - NOW PROTECTED
@@ -161,6 +148,15 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/pesanan/{id_pesanan}', [PesananController::class, 'destroy'])
         ->name('pesanan.destroy')
         ->where('id_pesanan', '\d+');
+    Route::post('/pesanan/{id_pesanan}/confirm', [PesananController::class, 'confirm'])
+        ->name('pesanan.confirm')
+        ->where('id_pesanan', '\d+');
+    Route::post('/pesanan/{id_pesanan}/cancel', [PesananController::class, 'cancel'])
+        ->name('pesanan.cancel')
+        ->where('id_pesanan', '\d+');
+    Route::post('/pesanan/{id_pesanan}/complete', [PesananController::class, 'complete'])
+        ->name('pesanan.complete')
+        ->where('id_pesanan', '\d+');
     Route::get('/pesanan/export/csv', [PesananController::class, 'exportCsv'])
         ->name('pesanan.export.csv');
 
@@ -194,9 +190,8 @@ Route::middleware(['auth'])->group(function () {
     // ─────────────────────────────────────────────────────────────
 
     Route::get('/pengiriman', [PengirimanController::class, 'index'])->name('pengiriman.index');
-    Route::get('/pengiriman/create/{id_pesanan}', [PengirimanController::class, 'create'])
-        ->name('pengiriman.create')
-        ->where('id_pesanan', '\d+');
+    Route::get('/pengiriman/create', [PengirimanController::class, 'create'])
+        ->name('pengiriman.create');
     Route::post('/pengiriman', [PengirimanController::class, 'store'])->name('pengiriman.store');
     Route::get('/pengiriman/{id_pengiriman}', [PengirimanController::class, 'show'])
         ->name('pengiriman.show')
@@ -210,6 +205,11 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/pengiriman/{id_pengiriman}', [PengirimanController::class, 'destroy'])
         ->name('pengiriman.destroy')
         ->where('id_pengiriman', '\d+');
+
+    // API endpoint untuk mendapatkan detail pesanan
+    Route::get('/api/pesanan/{id}/detail', [PengirimanController::class, 'getPesananDetail'])
+        ->name('api.pesanan.detail')
+        ->where('id', '\d+');
 
     // ─────────────────────────────────────────────────────────────
     // KARYAWAN ROUTES (RESTful)
@@ -253,6 +253,9 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/karyawan-produksi/{id_karyawan_produksi}', [KaryawanProduksiController::class, 'destroy'])
         ->name('karyawan_produksi.destroy')
         ->where('id_karyawan_produksi', '\d+');
+    Route::get('/karyawan-produksi/{id_karyawan_produksi}', [KaryawanProduksiController::class, 'show'])
+        ->name('karyawan_produksi.show')
+        ->where('id_karyawan_produksi', '\d+');
 
     // ─────────────────────────────────────────────────────────────
     // PRODUKSI ROUTES (RESTful)
@@ -275,44 +278,49 @@ Route::middleware(['auth'])->group(function () {
         ->name('produksi.destroy')
         ->where('id_produksi', '\d+');
 
+    // API endpoint untuk mendapatkan upah per unit produk
+    Route::get('/api/produk/{id_produk}/upah', [ProduksiController::class, 'getUpahPerUnit'])
+        ->name('api.produk.upah')
+        ->where('id_produk', '\d+');
+
     // ─────────────────────────────────────────────────────────────
-    // TIM PRODUKSI ROUTES (Canonical Routes)
+    // TIM PRODUKSI ROUTES (Transaksi Harian)
     // ─────────────────────────────────────────────────────────────
 
-    Route::get('/tim-produksi', [ProduksiKaryawanTimController::class, 'index'])
-        ->name('tim_produksi.index');
+    Route::resource('tim-produksi', TimProduksiController::class);
 
-    Route::get('/tim-produksi/create', [ProduksiKaryawanTimController::class, 'create'])
-        ->name('tim_produksi.create');
-    Route::post('/tim-produksi', [ProduksiKaryawanTimController::class, 'store'])
-        ->name('tim_produksi.store');
+    // API endpoint untuk mendapatkan info master ongkos
+    Route::get('/api/produksi/{id_produksi}/info', [TimProduksiController::class, 'getInfo'])
+        ->name('api.produksi.info')
+        ->where('id_produksi', '\d+');
 
-    // Member-level routes for individual anggota
-    Route::get('/tim-produksi/member/{id}', [ProduksiKaryawanTimController::class, 'show'])
-        ->name('tim_produksi.member.show')
-        ->where('id', '\d+');
-    Route::get('/tim-produksi/member/{id}/edit', [ProduksiKaryawanTimController::class, 'edit'])
-        ->name('tim_produksi.member.edit')
-        ->where('id', '\d+');
-    Route::put('/tim-produksi/member/{id}', [ProduksiKaryawanTimController::class, 'update'])
-        ->name('tim_produksi.member.update')
-        ->where('id', '\d+');
-    Route::delete('/tim-produksi/member/{id}', [ProduksiKaryawanTimController::class, 'destroy'])
-        ->name('tim_produksi.member.destroy')
+    // ─────────────────────────────────────────────────────────────
+    // PRODUKSI KARYAWAN TIM ROUTES (legacy views under resources/views/produksi_karyawan_tim)
+    // Provide explicit underscored names so views can call route('produksi_karyawan_tim.index') etc.
+    Route::resource('produksi-karyawan-tim', ProduksiKaryawanTimController::class)->names([
+        'index' => 'produksi_karyawan_tim.index',
+        'create' => 'produksi_karyawan_tim.create',
+        'store' => 'produksi_karyawan_tim.store',
+        'show' => 'produksi_karyawan_tim.show',
+        'edit' => 'produksi_karyawan_tim.edit',
+        'update' => 'produksi_karyawan_tim.update',
+        'destroy' => 'produksi_karyawan_tim.destroy',
+    ]);
+
+    // Additional group-level routes for operasi berdasarkan produksi + tanggal
+    Route::get('/produksi-karyawan-tim/{id}/{tanggal}', [ProduksiKaryawanTimController::class, 'detailByProduction'])
+        ->name('produksi_karyawan_tim.detail')
         ->where('id', '\d+');
 
-    // Group-level routes - MORE SPECIFIC ROUTES FIRST (with /edit)
-    Route::get('/tim-produksi/{id}/{tanggal}/edit', [ProduksiKaryawanTimController::class, 'editByProduction'])
-        ->name('tim_produksi.edit')
-        ->where(['id' => '\d+', 'tanggal' => '.+']);
-    Route::delete('/tim-produksi/{id}/{tanggal}', [ProduksiKaryawanTimController::class, 'destroyByProduction'])
-        ->name('tim_produksi.destroy')
-        ->where(['id' => '\d+', 'tanggal' => '.+']);
+    Route::get('/produksi-karyawan-tim/{id}/{tanggal}/edit', [ProduksiKaryawanTimController::class, 'editByProduction'])
+        ->name('produksi_karyawan_tim.edit_group')
+        ->where('id', '\d+');
 
-    // Generic detail route - LESS SPECIFIC ROUTES LAST
-    Route::get('/tim-produksi/{id}/{tanggal}', [ProduksiKaryawanTimController::class, 'detailByProduction'])
-        ->name('tim_produksi.detail')
-        ->where(['id' => '\d+', 'tanggal' => '.+']);
+    Route::delete('/produksi-karyawan-tim/{id}/{tanggal}', [ProduksiKaryawanTimController::class, 'destroyByProduction'])
+        ->name('produksi_karyawan_tim.destroy_group')
+        ->where('id', '\d+');
+
+    // Legacy routes - redirect to new tim-produksi routes
 
 }); // End of auth middleware group
 

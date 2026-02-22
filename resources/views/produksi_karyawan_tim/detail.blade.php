@@ -3,10 +3,10 @@
 @section('content')
 <div class="container py-5">
     <div class="mt-4">
-        @component('components.breadcrumb')
+            @component('components.breadcrumb')
             @slot('breadcrumbs', [
-                ['name' => 'Produksi Karyawan Tim', 'url' => route('tim_produksi.index')],
-                ['name' => 'Detail Tim', 'url' => route('tim_produksi.detail', ['id' => $record->produksi->id_produksi ?? $record->id_produksi, 'tanggal' => $record->tanggal_produksi])]
+                ['name' => 'Produksi Karyawan Tim', 'url' => route('produksi_karyawan_tim.index')],
+                ['name' => 'Detail Tim', 'url' => route('produksi_karyawan_tim.detail', ['id' => $record->produksi->id_produksi ?? $record->id_produksi, 'tanggal' => $record->tanggal_produksi])]
             ])
         @endcomponent
     </div>
@@ -90,8 +90,8 @@
 
     
 
-    <div class="mt-4">
-        <a href="{{ route('tim_produksi.index') }}" class="btn btn-secondary">
+        <div class="mt-4">
+        <a href="{{ route('produksi_karyawan_tim.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>

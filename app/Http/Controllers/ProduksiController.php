@@ -3,99 +3,183 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produksi;
-use App\Models\Karyawan;
 use App\Models\Produk;
-use App\Models\ProduksiKaryawanTim;
-use App\Http\Requests\StoreProduksiRequest;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ProduksiController extends Controller
 {
-    public function index()
-    {
-        $produksis = Produksi::all();
-        return view('produksi.dashboard_produksi', compact('produksis'));
-    }
-
     public function __construct()
     {
-        $this->middleware('auth')->except(['index', 'show', 'detailByDate', 'create']);
-        // TODO: middleware not registered, removed for safety
-    }
-
-    public function create()
-    {
-        // Ambil master produk untuk dropdown
-        $produks = Produk::all();
-        $karyawans = Karyawan::all();
-
-        // Kirim data ke view
-        return view('produksi.create_produksi', compact('produks', 'karyawans'));
-    }
-
-    public function store(StoreProduksiRequest $request)
-    {
-        $validatedData = $request->validated();
-
-        Produksi::create($validatedData);
-
-        return redirect()->route('produksi.index')->with('success', 'Produksi berhasil ditambahkan.');
-    }
-
-    public function show($id)
-    {
-        $produksi = Produksi::findOrFail($id);
-        return view('produksi.show_produksi', compact('produksi'));
+        $this->middleware('auth')->except(['index', 'show']);
     }
 
     /**
-     * Detail by produksi id and tanggal (canonical)
-     * route: /produksi/{id}/{tanggal}
+     * Display a listing of MASTER ONGKOS (Produksi)
+     * 
+     * Ini adalah MASTER ONGKOS - bukan transaksi harian
+     * Setiap record menentukan upah per unit untuk produk tertentu
      */
-    public function detailByDate($id, $tanggal)
+    public function index()
     {
-        $produksi = Produksi::findOrFail($id);
-        $tanggalCarbon = Carbon::parse($tanggal)->toDateString();
+        $produksis = Produksi::with('produk')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        $total_unit = ProduksiKaryawanTim::where('id_produksi', $id)
-            ->whereDate('tanggal_produksi', $tanggalCarbon)
-            ->sum('jumlah_unit');
-
-        $jumlah_anggota = ProduksiKaryawanTim::where('id_produksi', $id)
-            ->whereDate('tanggal_produksi', $tanggalCarbon)
-            ->distinct('id_karyawan')
-            ->count('id_karyawan');
-
-        return view('produksi.show_produksi', compact('produksi', 'tanggalCarbon', 'total_unit', 'jumlah_anggota'));
+        return view('produksi.index', compact('produksis'));
     }
 
+    /**
+     * Show the form for creating new MASTER ONGKOS
+     */
+    public function create()
+    {
+        $produks = Produk::all();
+
+        return view('produksi.create', compact('produks'));
+    }
+
+    /**
+     * Store newly created MASTER ONGKOS
+     * 
+     * Hanya menyimpan: id_produk, upah_per_unit, satuan, keterangan
+     * TIDAK ada tanggal, karyawan, atau jumlah_produksi
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'id_produk' => 'required|exists:produks,id_produk',
+            'upah_per_unit' => 'required|numeric|min:0',
+            'satuan' => 'required|string|max:50',
+            'keterangan' => 'nullable|string|max:500',
+        ], [
+            'id_produk.required' => 'Produk wajib dipilih',
+            'id_produk.exists' => 'Produk tidak valid',
+            'upah_per_unit.required' => 'Upah per unit wajib diisi',
+            'upah_per_unit.numeric' => 'Upah harus berupa angka',
+            'upah_per_unit.min' => 'Upah tidak boleh negatif',
+            'satuan.required' => 'Satuan wajib diisi',
+        ]);
+
+        // Cek duplikasi: satu produk hanya boleh punya satu master ongkos
+        $exists = Produksi::where('id_produk', $validated['id_produk'])->exists();
+        if ($exists) {
+            return back()->withErrors(['id_produk' => 'Master ongkos untuk produk ini sudah ada'])->withInput();
+        }
+
+        try {
+            Produksi::create($validated);
+
+            return redirect()->route('produksi.index')
+                ->with('success', 'Master Ongkos berhasil ditambahkan');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Gagal menyimpan: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+    /**
+     * Display MASTER ONGKOS details
+     * 
+     * Menampilkan detail ongkos dan riwayat transaksi (jika ada)
+     */
+    public function show($id)
+    {
+        $produksi = Produksi::with('produk')->findOrFail($id);
+
+        // Ambil riwayat transaksi jika ada
+        $riwayatTransaksi = $produksi->timProduksi()
+            ->with('karyawan')
+            ->orderBy('tanggal_produksi', 'desc')
+            ->limit(50)
+            ->get();
+
+        return view('produksi.show', compact('produksi', 'riwayatTransaksi'));
+    }
+
+    /**
+     * Show the form for editing MASTER ONGKOS
+     */
     public function edit($id)
     {
         $produksi = Produksi::findOrFail($id);
         $produks = Produk::all();
-        return view('produksi.edit_produksi', compact('produksi', 'produks'));
+
+        return view('produksi.edit', compact('produksi', 'produks'));
     }
 
-    public function update(StoreProduksiRequest $request, $id)
+    /**
+     * Update MASTER ONGKOS
+     */
+    public function update(Request $request, $id)
     {
+        $validated = $request->validate([
+            'id_produk' => 'required|exists:produks,id_produk',
+            'upah_per_unit' => 'required|numeric|min:0',
+            'satuan' => 'required|string|max:50',
+            'keterangan' => 'nullable|string|max:500',
+        ]);
+
+        // Cek duplikasi (kecuali record ini)
+        $exists = Produksi::where('id_produk', $validated['id_produk'])
+            ->where('id_produksi', '!=', $id)
+            ->exists();
+        if ($exists) {
+            return back()->withErrors(['id_produk' => 'Master ongkos untuk produk ini sudah ada'])->withInput();
+        }
+
         $produksi = Produksi::findOrFail($id);
-        $validatedData = $request->validated();
+        $produksi->update($validated);
 
-        $produksi->update($validatedData);
-
-        return redirect()->route('produksi.index')->with('success', 'Data produksi berhasil diperbarui.');
+        return redirect()->route('produksi.show', $id)
+            ->with('success', 'Master Ongkos berhasil diperbarui');
     }
 
+    /**
+     * Remove MASTER ONGKOS
+     */
     public function destroy($id)
     {
-        // Cari data produksi berdasarkan ID
         $produksi = Produksi::findOrFail($id);
 
-        // Hapus data produksi
-        $produksi->delete();
+        // Cek apakah ada transaksi yang menggunakan ongkos ini
+        $hasTransactions = $produksi->timProduksi()->exists();
+        if ($hasTransactions) {
+            return back()->withErrors(['error' => 'Tidak dapat menghapus - ada transaksi yang menggunakan ongkos ini']);
+        }
 
-        // Redirect ke halaman dashboard dengan pesan sukses
-        return redirect()->route('produksi.index')->with('success', 'Produksi berhasil dihapus.');
+        try {
+            $produksi->delete();
+
+            return redirect()->route('produksi.index')
+                ->with('success', 'Master Ongkos berhasil dihapus');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Gagal menghapus: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Get informasi upah untuk produk (API)
+     */
+    public function getUpahInfo($id_produk)
+    {
+        $produksi = Produksi::where('id_produk', $id_produk)->first();
+
+        if (!$produksi) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Master ongkos belum diatur untuk produk ini'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id_produksi' => $produksi->id_produksi,
+                'id_produk' => $produksi->id_produk,
+                'nama_produk' => $produksi->produk->nama_produk ?? 'N/A',
+                'upah_per_unit' => $produksi->upah_per_unit,
+                'satuan' => $produksi->satuan,
+            ]
+        ]);
     }
 }
